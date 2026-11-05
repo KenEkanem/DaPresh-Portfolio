@@ -30,15 +30,6 @@ All editable content lives in `src/content/site/` as JSON. There's no content in
 | `about.json` | About title, Behance link, bio paragraphs, portrait |
 | `resume.json` | Experience timeline, software skills (`badge` is the 2-letter icon text, `level` is 0–100), design skills, hobbies, background image |
 
-### Hero background image
-
-1. Put the image in `src/assets/hero/`, e.g. `src/assets/hero/hero-bg.jpg`.
-2. Add it to `hero.json`. The path is relative to the JSON file:
-   ```json
-   "backgroundImage": "../../assets/hero/hero-bg.jpg"
-   ```
-
-If no image is set, a dark gradient is used. Astro optimises images automatically (resizing and WebP).
 
 ## Deploying on Render (stages 1 to 5)
 
