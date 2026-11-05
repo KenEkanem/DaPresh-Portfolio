@@ -1,0 +1,18 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import About from '../components/About.astro';
+import Resume from '../components/Resume.astro';
+---
+
+<BaseLayout>
+  <Header />
+  <main>
+    <Hero />
+    <About next={{ href: '#resume', label: 'Scroll to Resumé' }} />
+    <!-- Add next={{ href: '#brand', label: 'Scroll to Brand' }} once the Brand section exists -->
+    <Resume />
+    <!-- Coming next: Brand, Portfolio, Contact -->
+  </main>
+</BaseLayout>

@@ -1,0 +1,99 @@
+:root {
+  --bg: #0a0a0a;
+  --bg-soft: #141414;
+  --text: #ffffff;
+  --text-muted: #b5b5b5;
+  --accent: #e5f20d;
+
+  --font-sans: 'Jost', 'Futura', 'Century Gothic', system-ui, sans-serif;
+  --container: 1160px;
+  --gutter: clamp(16px, 5vw, 64px);
+  --header-h: 88px;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img, svg { display: block; max-width: 100%; }
+
+a { color: inherit; text-decoration: none; }
+
+.container {
+  width: 100%;
+  max-width: calc(var(--container) + var(--gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* Big section heading with the yellow underline bar (ABOUT, BRAND, ...) */
+.section-title {
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  line-height: 1;
+  margin: 0 0 1rem;
+}
+.accent-bar {
+  display: block;
+  width: 100px;
+  height: 4px;
+  background: var(--accent);
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* Full-screen "page" section (About, Resumé, ...) */
+.page {
+  position: relative;
+  min-height: 100svh;
+  display: grid;
+  align-items: center;
+  padding-block: calc(var(--header-h) + 1rem) 6.5rem; /* bottom room for the scroll cue */
+  overflow: hidden;
+  isolation: isolate;
+  scroll-snap-align: start;
+}
+
+/* Gentle page-by-page snapping on larger screens only */
+@media (min-width: 900px) and (min-height: 700px) {
+  html { scroll-snap-type: y proximity; }
+  .page, #home { scroll-snap-align: start; }
+}
+
+.page-heading { margin-bottom: clamp(1.5rem, 4vh, 3rem); }
+.page-heading .accent-bar { margin-top: 0.25rem; }
+
+.eyebrow {
+  color: var(--accent);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+  margin: 0 0 1rem;
+  letter-spacing: 0.01em;
+}

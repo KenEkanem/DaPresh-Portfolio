@@ -1,0 +1,241 @@
+---
+import { getEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import LogoMark from './LogoMark.astro';
+import ScrollCue from './ScrollCue.astro';
+
+interface Props {
+  next?: { href: string; label: string };
+}
+const { next } = Astro.props;
+
+const resume = await getEntry('resume', 'resume');
+if (!resume) throw new Error('Missing src/content/site/resume.json');
+const d = resume.data;
+---
+
+<section id="resume" class="page resume" data-nav="about" aria-labelledby="resume-title">
+  {
+    d.backgroundImage && (
+      <div class="resume-bg" aria-hidden="true">
+        <Image src={d.backgroundImage} alt="" widths={[960, 1440, 1920, 2540]} sizes="100vw" />
+      </div>
+    )
+  }
+
+  <div class="container">
+    <header class="page-heading resume-heading">
+      <div>
+        <h2 id="resume-title" class="section-title">{d.title}</h2>
+        <span class="accent-bar"></span>
+      </div>
+      <LogoMark class="resume-mark" filled />
+    </header>
+
+    <div class="resume-grid">
+      <!-- Experience timeline -->
+      <div>
+        <h3 class="eyebrow">{d.experienceTitle}</h3>
+        <ol class="timeline">
+          {
+            d.experience.map((job) => (
+              <li>
+                <span class="dot" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M10 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+                <div>
+                  <p class="company">{job.company}</p>
+                  <p class="role">{job.role}</p>
+                  <p class="period">{job.period}</p>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+
+      <!-- Software skills with level bars -->
+      <div>
+        <h3 class="eyebrow">{d.softwareTitle}</h3>
+        <ul class="software">
+          {
+            d.software.map((s) => (
+              <li>
+                <span class="badge" aria-hidden="true">{s.badge}</span>
+                <div class="skill">
+                  <span class="skill-name">{s.name}</span>
+                  <div
+                    class="track"
+                    role="meter"
+                    aria-label={`${s.name} proficiency`}
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow={s.level}
+                    aria-valuetext={`${s.level}%`}
+                    style={`--level: ${s.level}%`}
+                  >
+                    <span class="fill" />
+                    <span class="knob" />
+                  </div>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <!-- Design skills + hobbies -->
+      <div>
+        <h3 class="eyebrow">{d.designSkillsTitle}</h3>
+        <ul class="dash-list">{d.designSkills.map((s) => <li>{s}</li>)}</ul>
+
+        <h3 class="eyebrow hobbies-title">{d.hobbiesTitle}</h3>
+        <ul class="dash-list">{d.hobbies.map((h) => <li>{h}</li>)}</ul>
+      </div>
+    </div>
+  </div>
+
+  {next && <ScrollCue href={next.href} label={next.label} />}
+</section>
+
+<style>
+  .resume { background: #050505; }
+
+  .resume-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    -webkit-mask-image: radial-gradient(ellipse 85% 80% at 50% 50%, #000 55%, transparent 100%);
+    mask-image: radial-gradient(ellipse 85% 80% at 50% 50%, #000 55%, transparent 100%);
+  }
+  .resume-bg :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.9;
+  }
+
+  .resume-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .resume-heading :global(.resume-mark) {
+    width: clamp(36px, 4vw, 56px);
+    color: var(--text);
+    margin-right: clamp(0px, 6vw, 7rem);
+  }
+
+  .resume-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr 0.9fr;
+    gap: clamp(2rem, 5vw, 5rem);
+  }
+
+  ul, ol { list-style: none; margin: 0; padding: 0; }
+  p { margin: 0; }
+
+  /* ---------- Experience timeline ---------- */
+  .timeline li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 1.25rem;
+    padding-bottom: 1.6rem;
+  }
+  .timeline li:not(:last-child)::before {
+    /* connector line between the circles */
+    content: '';
+    position: absolute;
+    left: 20px;
+    top: 44px;
+    bottom: 0;
+    width: 4px;
+    background: var(--text);
+  }
+  .dot {
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--text);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+  }
+  .dot svg { width: 22px; height: 22px; }
+  .company, .role { font-size: clamp(1rem, 1.3vw, 1.2rem); font-weight: 300; line-height: 1.35; }
+  .period { font-style: italic; font-size: clamp(1rem, 1.3vw, 1.2rem); font-weight: 300; }
+
+  /* ---------- Software skills ---------- */
+  .software { display: grid; gap: 0.9rem; }
+  .software li {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 1rem;
+    align-items: center;
+  }
+  .badge {
+    width: 52px;
+    height: 52px;
+    border: 2px solid var(--text);
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 1.35rem;
+  }
+  .skill-name { font-size: 0.95rem; font-weight: 300; }
+  .track {
+    position: relative;
+    height: 4px;
+    margin-top: 0.5rem;
+    border-radius: 2px;
+    background: #8a8a8a;
+    max-width: 260px;
+  }
+  .fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--level);
+    background: var(--text);
+    border-radius: 2px;
+  }
+  .knob {
+    position: absolute;
+    top: 50%;
+    left: var(--level);
+    translate: -50% -50%;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--text) 0 4px, #050505 5px 6px, var(--text) 7px);
+  }
+
+  /* ---------- Lists ---------- */
+  .dash-list li {
+    position: relative;
+    padding-left: 1.75rem;
+    font-size: clamp(1rem, 1.3vw, 1.2rem);
+    font-weight: 300;
+    line-height: 1.55;
+  }
+  .dash-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.75em;
+    width: 0.75rem;
+    height: 3px;
+    background: var(--text);
+  }
+  .hobbies-title { margin-top: 2rem; }
+
+  @media (max-width: 1000px) {
+    .resume-grid { grid-template-columns: 1fr 1fr; }
+  }
+  @media (max-width: 640px) {
+    .resume-grid { grid-template-columns: 1fr; }
+    .resume-heading :global(.resume-mark) { margin-right: 0; }
+  }
+</style>

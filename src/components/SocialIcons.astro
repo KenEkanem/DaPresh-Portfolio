@@ -1,0 +1,51 @@
+---
+import { getEntry } from 'astro:content';
+import { Icon } from 'astro-icon/components';
+
+const settings = await getEntry('settings', 'settings');
+const socials = settings?.data.socials ?? {};
+
+// Order and icon for each network; links left empty in settings.json are hidden.
+const networks = [
+  { key: 'behance', label: 'Behance', icon: 'ri:behance-fill' },
+  { key: 'facebook', label: 'Facebook', icon: 'ri:facebook-fill' },
+  { key: 'linkedin', label: 'LinkedIn', icon: 'ri:linkedin-box-fill' },
+  { key: 'pinterest', label: 'Pinterest', icon: 'ri:pinterest-fill' },
+  { key: 'instagram', label: 'Instagram', icon: 'ri:instagram-line' },
+  { key: 'x', label: 'X', icon: 'ri:twitter-x-fill' },
+  { key: 'whatsapp', label: 'WhatsApp', icon: 'ri:whatsapp-line' },
+] as const;
+
+const links = networks
+  .map((n) => ({ ...n, href: socials[n.key as keyof typeof socials] }))
+  .filter((n) => n.href);
+---
+
+<ul class="socials">
+  {
+    links.map((n) => (
+      <li>
+        <a href={n.href} target="_blank" rel="noopener noreferrer" aria-label={n.label}>
+          <Icon name={n.icon} />
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .socials {
+    display: flex;
+    gap: 0.6rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  a {
+    display: grid;
+    place-items: center;
+    font-size: 1.75rem;
+    transition: color 0.2s;
+  }
+  a:hover { color: var(--accent); }
+</style>

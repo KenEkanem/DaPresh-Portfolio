@@ -1,0 +1,23 @@
+{
+  "title": "Resumé",
+  "backgroundImage": "../../assets/about/resume-bg.jpg",
+  "experienceTitle": "Experience",
+  "experience": [
+    { "company": "212 Technologies", "role": "Graphic Designer", "period": "2024 – 2025" },
+    { "company": "Deluxe Homes", "role": "Brand Identity Designer", "period": "2023 – 2024" },
+    { "company": "GreatMoon Limited", "role": "Brand Identity Designer", "period": "2022 – 2024" },
+    { "company": "HoneyStreams Christian Centre", "role": "Lead Designer", "period": "2020 – Till Date" }
+  ],
+  "softwareTitle": "Software Skills",
+  "software": [
+    { "name": "Photoshop", "badge": "Ps", "level": 70 },
+    { "name": "CorelDRAW", "badge": "Cd", "level": 85 },
+    { "name": "After Effects", "badge": "Ae", "level": 47 },
+    { "name": "Premiere Pro", "badge": "Pr", "level": 66 },
+    { "name": "CapCut", "badge": "Cc", "level": 85 }
+  ],
+  "designSkillsTitle": "Design Skills",
+  "designSkills": ["Creativity", "Strategy and Planning", "Colour Psychology", "Layouts and Grids", "Typography"],
+  "hobbiesTitle": "Hobbies",
+  "hobbies": ["Reading", "Sketching", "Research", "Photography", "Travel"]
+}

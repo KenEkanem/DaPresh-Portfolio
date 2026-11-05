@@ -1,0 +1,122 @@
+---
+const links = [
+  { href: '#home', label: 'Home' },
+  { href: '#about', label: 'About' },
+  { href: '#brand', label: 'Brand' },
+  { href: '#portfolio', label: 'Portfolio' },
+  { href: '#contact', label: 'Contact' },
+];
+---
+
+<header class="site-header">
+  <nav class="container nav" aria-label="Main">
+    <button class="menu-toggle" aria-expanded="false" aria-controls="nav-links">
+      <span class="visually-hidden">Menu</span>
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+    </button>
+    <ul id="nav-links" class="nav-links">
+      {
+        links.map((l, i) => (
+          <li>
+            <a href={l.href} class:list={{ active: i === 0 }}>{l.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const list = document.getElementById('nav-links');
+  const anchors = [...document.querySelectorAll<HTMLAnchorElement>('.nav-links a')];
+
+  toggle?.addEventListener('click', () => {
+    const open = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!open));
+    list?.classList.toggle('open', !open);
+  });
+
+  anchors.forEach((a) =>
+    a.addEventListener('click', () => {
+      toggle?.setAttribute('aria-expanded', 'false');
+      list?.classList.remove('open');
+    }),
+  );
+
+  // Highlight the nav link of the section on screen. A section's data-nav says which
+  // link it belongs to, so both About pages (About + Resumé) light up "About".
+  const sections = [...document.querySelectorAll<HTMLElement>('[data-nav]')];
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const key = (e.target as HTMLElement).dataset.nav;
+        anchors.forEach((a) => {
+          const on = a.hash === `#${key}`;
+          a.classList.toggle('active', on);
+          if (on) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+      });
+    },
+    { rootMargin: '-45% 0px -50% 0px' },
+  );
+  sections.forEach((s) => observer.observe(s));
+</script>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 50;
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    background: linear-gradient(to bottom, rgba(10, 10, 10, 0.85), transparent);
+  }
+  .nav { display: flex; align-items: center; }
+  .nav-links {
+    display: flex;
+    gap: clamp(1rem, 2.5vw, 2rem);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: 1.15rem;
+  }
+  .nav-links a { transition: color 0.2s; }
+  .nav-links a:hover,
+  .nav-links a.active { color: var(--accent); }
+
+  .menu-toggle {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    background: none;
+    border: 0;
+    padding: 8px;
+    cursor: pointer;
+  }
+  .bar { width: 26px; height: 2px; background: var(--text); transition: transform 0.2s, opacity 0.2s; }
+  .menu-toggle[aria-expanded='true'] .bar:nth-of-type(2) { transform: translateY(7px) rotate(45deg); }
+  .menu-toggle[aria-expanded='true'] .bar:nth-of-type(3) { opacity: 0; }
+  .menu-toggle[aria-expanded='true'] .bar:nth-of-type(4) { transform: translateY(-7px) rotate(-45deg); }
+
+  @media (max-width: 640px) {
+    .menu-toggle { display: flex; }
+    .nav-links {
+      position: absolute;
+      top: var(--header-h);
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      gap: 0;
+      background: var(--bg);
+      padding: 0.5rem var(--gutter) 1.5rem;
+      display: none;
+    }
+    .nav-links.open { display: flex; }
+    .nav-links a { display: block; padding: 0.75rem 0; }
+  }
+</style>

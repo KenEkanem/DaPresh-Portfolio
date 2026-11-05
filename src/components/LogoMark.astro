@@ -1,0 +1,22 @@
+---
+/** XplicitDesign lightning mark, drawn as two outlined blades. */
+interface Props {
+  class?: string;
+  filled?: boolean;
+  strokeWidth?: number;
+}
+const { class: className, filled = false, strokeWidth = 3.5 } = Astro.props;
+---
+
+<svg
+  class={className}
+  viewBox="0 0 295 425"
+  fill={filled ? 'currentColor' : 'none'}
+  stroke={filled ? 'none' : 'currentColor'}
+  stroke-width={strokeWidth}
+  stroke-linejoin="miter"
+  aria-hidden="true"
+>
+  <polygon points="30,75 188,260 8,413 65,300" />
+  <polygon points="208,7 200,130 285,337 118,133" />
+</svg>

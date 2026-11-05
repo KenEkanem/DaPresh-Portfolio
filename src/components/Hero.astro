@@ -1,0 +1,165 @@
+---
+import { getEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import LogoMark from './LogoMark.astro';
+import SocialIcons from './SocialIcons.astro';
+
+const hero = await getEntry('hero', 'hero');
+const settings = await getEntry('settings', 'settings');
+if (!hero || !settings) throw new Error('Missing hero.json or settings.json');
+
+const { firstName, lastName, role, backgroundImage, backgroundAlt, showLogoMark } = hero.data;
+const { siteName, copyrightYear } = settings.data;
+
+// Aspect ratio of the background "stage" the logo is positioned on.
+const ratio = backgroundImage ? backgroundImage.width / backgroundImage.height : 16 / 9;
+---
+
+<section id="home" class="hero" data-nav="home" style={`--stage-ratio: ${ratio}`}>
+  <!--
+    The stage behaves like object-fit: cover, so the logo mark (positioned in % of the
+    stage) stays locked to the same spot on the photo at every screen size.
+  -->
+  <div class="hero-stage" aria-hidden={backgroundImage ? undefined : 'true'}>
+    {
+      backgroundImage && (
+        <Image
+          src={backgroundImage}
+          alt={backgroundAlt}
+          widths={[960, 1440, 1920, 2560]}
+          sizes="(max-width: 640px) 300vw, 100vw"
+          loading="eager"
+          fetchpriority="high"
+        />
+      )
+    }
+    {showLogoMark && <LogoMark class="hero-mark" />}
+  </div>
+  <div class="hero-shade" aria-hidden="true"></div>
+
+  <div class="container hero-content">
+    <h1 class="hero-name">
+      <span class="first">{firstName}</span>
+      <span class="last">{lastName}</span>
+    </h1>
+    <p class="hero-role">{role}</p>
+    <span class="accent-bar hero-bar"></span>
+  </div>
+
+  <div class="container hero-footer">
+    <SocialIcons />
+    <p class="copyright">{siteName} | © {copyrightYear} | All Rights Reserved</p>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding-top: var(--header-h);
+    overflow: hidden;
+    isolation: isolate;
+    container-type: size;
+    background: #030303;
+  }
+
+  /* ---------- background stage ---------- */
+  .hero-stage {
+    position: absolute;
+    z-index: -2;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    /* cover the hero, but never blow up past the photo's own size on ultra-wide screens */
+    width: min(max(100cqw, calc(100cqh * var(--stage-ratio))), 2560px);
+    aspect-ratio: var(--stage-ratio);
+    /* feather all four edges so the photo melts into the dark page background */
+    --fade-x: clamp(48px, 9%, 220px);
+    --fade-y: clamp(48px, 12%, 200px);
+    -webkit-mask-image:
+      linear-gradient(to right, transparent, #000 var(--fade-x), #000 calc(100% - var(--fade-x)), transparent),
+      linear-gradient(to bottom, transparent, #000 var(--fade-y), #000 calc(100% - var(--fade-y)), transparent);
+    -webkit-mask-composite: source-in;
+    mask-image:
+      linear-gradient(to right, transparent, #000 var(--fade-x), #000 calc(100% - var(--fade-x)), transparent),
+      linear-gradient(to bottom, transparent, #000 var(--fade-y), #000 calc(100% - var(--fade-y)), transparent);
+    mask-composite: intersect;
+    /* Fallback when no background image is set */
+    background:
+      radial-gradient(ellipse 30% 25% at 72% 32%, rgba(255, 255, 255, 0.08), transparent 70%),
+      radial-gradient(ellipse 60% 50% at 50% 40%, #1c1f24, transparent 75%),
+      linear-gradient(to bottom, #0d0e10 0%, #121417 62%, #050505 63%, #030303 100%);
+  }
+  .hero-stage :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Logo sits on the right lamp, down to the mouse (matches the PDF layout) */
+  .hero-stage :global(.hero-mark) {
+    position: absolute;
+    left: 68.6%;
+    top: 20.2%;
+    width: 21.1%;
+    color: #fff;
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
+    pointer-events: none;
+  }
+
+  /* Keep the left side dark enough for the name */
+  .hero-shade {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.15) 45%, transparent 65%);
+  }
+
+  /* ---------- content ---------- */
+  .hero-content {
+    align-self: center;
+    padding-bottom: 4vh;
+  }
+  .hero-name {
+    margin: 0;
+    line-height: 0.95;
+    text-transform: uppercase;
+  }
+  .first {
+    display: block;
+    font-weight: 400;
+    font-size: clamp(2.75rem, 5.2vw, 5.5rem);
+  }
+  .last {
+    display: block;
+    font-weight: 900;
+    font-size: clamp(3.25rem, 7.6vw, 8rem);
+    letter-spacing: -0.01em;
+  }
+  .hero-role {
+    margin: 0.6rem 0 0.9rem;
+    font-size: clamp(1.1rem, 2.15vw, 2.25rem);
+    letter-spacing: 0.42em;
+  }
+  .hero-bar { width: clamp(100px, 10vw, 145px); }
+
+  .hero-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 2rem;
+  }
+  .copyright { margin: 0; font-size: 1.05rem; }
+
+  /* ---------- phones: show the right-hand part of the desk with the logo ---------- */
+  @media (max-width: 640px) {
+    .hero-stage { translate: -78% -50%; }
+    .hero-stage :global(.hero-mark) { opacity: 0.35; }
+    .hero-shade { background: rgba(0, 0, 0, 0.35); }
+    .hero-footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>

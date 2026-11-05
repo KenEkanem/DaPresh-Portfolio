@@ -1,0 +1,58 @@
+---
+/**
+ * Bouncing "scroll down" indicator pinned to the bottom of a full-screen section.
+ * It is a real link to the next section, so it works with keyboard and screen readers;
+ * the bounce stops for users who prefer reduced motion.
+ */
+interface Props {
+  href: string;
+  label: string; // e.g. "Scroll to Resumé"
+}
+const { href, label } = Astro.props;
+---
+
+<a class="scroll-cue" href={href} aria-label={label}>
+  <span class="cue-text" aria-hidden="true">Scroll</span>
+  <svg class="cue-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"></path>
+  </svg>
+</a>
+
+<style>
+  .scroll-cue {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(1rem, 3vh, 2rem);
+    translate: -50% 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    transition: color 0.2s, opacity 0.2s;
+    animation: cue-bounce 1.8s ease-in-out infinite;
+  }
+  .scroll-cue:hover,
+  .scroll-cue:focus-visible {
+    color: var(--accent);
+    opacity: 1;
+    animation-play-state: paused;
+  }
+  .cue-text { padding-left: 0.3em; /* balance the letter-spacing */ }
+  .cue-icon { width: 28px; height: 28px; color: var(--accent); }
+
+  @keyframes cue-bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(10px); }
+    60% { transform: translateY(5px); }
+  }
+</style>
