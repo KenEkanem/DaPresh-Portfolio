@@ -13,52 +13,82 @@
         {
           "ratio": "231/231",
           "label": "Flyer 1",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "231/231",
           "label": "Flyer 2",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "205/231",
           "label": "Flyer 3",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "205/231",
           "label": "Flyer 4",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "205/231",
           "label": "Flyer 5",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "231/231",
           "label": "Flyer 6",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "231/231",
           "label": "Flyer 7",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "205/231",
           "label": "Flyer 8",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "205/231",
           "label": "Flyer 9",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "205/231",
           "label": "Flyer 10",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         }
       ]
     }

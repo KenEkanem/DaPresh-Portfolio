@@ -11,22 +11,34 @@
         {
           "ratio": "297/444",
           "label": "Book cover 1",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "297/444",
           "label": "Book cover 2",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "297/444",
           "label": "Book cover 3",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "297/444",
           "label": "Book cover 4",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         }
       ]
     }

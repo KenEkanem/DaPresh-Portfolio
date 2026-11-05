@@ -37,6 +37,10 @@ All editable content lives in `src/content/site/` as JSON. There's no content in
 
 Each file in `src/content/portfolio/` is one full-screen page, shown in `order`. Every image slot has a `ratio` ("width/height", measured from the PDF) that fixes its shape. Until you add an `image`, the slot shows a placeholder with the ratio printed on it, so you know what size to export the real image at.
 
+Project details:
+- **Single-project pages** (`showcase`, `duo`, `feature-left`, `feature-center`): set `title`, `client` and `date` on the project. They show under the section heading.
+- **Collection pages** (`grid`, `justified`): each image is its own project. Set `title`, `client` and `date` on each slot, and they show as a caption under the image. Leave all three out to hide the caption.
+
 To add a real image, put it in `src/assets/portfolio/` and add `"image": "../../assets/portfolio/your-file.jpg"` and an `alt` text to that slot. The layout won't change.
 
 | `layout` | Arrangement | Used for |

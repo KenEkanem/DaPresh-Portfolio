@@ -11,17 +11,26 @@
         {
           "ratio": "383/469",
           "label": "Packaging 1",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "383/469",
           "label": "Packaging 2",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "383/469",
           "label": "Packaging 3",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         }
       ]
     }

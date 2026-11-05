@@ -118,6 +118,10 @@ const tile = (image: SchemaContext['image']) =>
     alt: z.string().default(''),
     ratio: z.string().regex(/^\d+(\.\d+)?\/\d+(\.\d+)?$/, 'Use "width/height", e.g. "4/5"'),
     label: z.string().optional(),
+    /** caption under the image (collection pages): project title, client, date */
+    title: z.string().optional(),
+    client: z.string().optional(),
+    date: z.string().optional(),
   });
 
 /** Portfolio overview page: heading + category cards. */
@@ -161,9 +165,12 @@ const portfolioPages = defineCollection({
       projects: z
         .array(
           z.object({
+            /** section heading, e.g. "Logo/Visual Identity" */
             heading: z.string(),
+            /** project details shown under the heading */
+            title: z.string().optional(),
             client: z.string().optional(),
-            year: z.string().optional(),
+            date: z.string().optional(),
             /** duo layout: how many tiles go in the first column */
             split: z.number().int().optional(),
             items: z.array(tile(image)).min(1),

@@ -9,8 +9,9 @@
   "projects": [
     {
       "heading": "Logo/Visual Identity",
+      "title": "Project Title",
       "client": "Client Name",
-      "year": "2024",
+      "date": "2024",
       "items": [
         {
           "ratio": "215/203",

@@ -5,8 +5,9 @@
   "projects": [
     {
       "heading": "Logo/Visual Identity",
+      "title": "Project Title",
       "client": "Client Name",
-      "year": "2023",
+      "date": "2023",
       "split": 2,
       "items": [
         {
@@ -38,8 +39,9 @@
     },
     {
       "heading": "Logo/Visual Identity",
+      "title": "Project Title",
       "client": "Client Name",
-      "year": "2023",
+      "date": "2023",
       "split": 3,
       "items": [
         {

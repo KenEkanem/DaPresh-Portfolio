@@ -82,7 +82,7 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
     {/* ───── heading shown above the content (most layouts) ───── */}
     {
       ['grid', 'feature-center', 'justified'].includes(d.layout) && (
-        <PortfolioHeading id={titleId} heading={first.heading} client={first.client} year={first.year} />
+        <PortfolioHeading id={titleId} heading={first.heading} title={first.title} client={first.client} date={first.date} />
       )
     }
 
@@ -91,7 +91,7 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
         <div class="showcase">
           <div class="sc-top" style={`grid-template-columns: ${fr(d.proportions, '448fr 622fr')}`}>
             <div class="sc-left">
-              <PortfolioHeading id={titleId} heading={first.heading} client={first.client} year={first.year} />
+              <PortfolioHeading id={titleId} heading={first.heading} title={first.title} client={first.client} date={first.date} />
               <div class="row sc-pair">
                 {items.slice(0, 2).map((it) => <Tile item={it} sizes="(max-width: 700px) 50vw, 20vw" />)}
               </div>
@@ -115,8 +115,9 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
                 <PortfolioHeading
                   id={pi === 0 ? titleId : `${d.anchor}-title-${pi}`}
                   heading={p.heading}
+                  title={p.title}
                   client={p.client}
-                  year={p.year}
+                  date={p.date}
                 />
                 <div class="duo-tiles">
                   <div class="stack">
@@ -148,7 +149,7 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
       d.layout === 'feature-left' && (
         <div class="fl" style={`grid-template-columns: ${fr(d.proportions, '1fr 2fr')}`}>
           <div class="fl-left">
-            <PortfolioHeading id={titleId} heading={first.heading} client={first.client} year={first.year} />
+            <PortfolioHeading id={titleId} heading={first.heading} title={first.title} client={first.client} date={first.date} />
             <Tile item={items[0]} sizes="(max-width: 700px) 100vw, 35vw" />
           </div>
           <div class="grid fl-smalls">

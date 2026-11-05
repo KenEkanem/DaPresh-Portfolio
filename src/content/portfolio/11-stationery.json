@@ -13,37 +13,58 @@
         {
           "ratio": "418/220",
           "label": "Jotter mockup",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "211/218",
           "label": "Business cards",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "211/218",
           "label": "Brochure",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "211/218",
           "label": "Brochure",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "416/220",
           "label": "Jotter mockup",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "312/218",
           "label": "Business cards",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         },
         {
           "ratio": "357/218",
           "label": "Tri-fold brochure",
-          "alt": ""
+          "alt": "",
+          "title": "Project Title",
+          "client": "Client Name",
+          "date": "2024"
         }
       ]
     }
