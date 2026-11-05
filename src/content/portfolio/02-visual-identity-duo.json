@@ -1,0 +1,73 @@
+{
+  "order": 2,
+  "layout": "duo",
+  "anchor": "pf-visual-identity-2",
+  "projects": [
+    {
+      "heading": "Logo/Visual Identity",
+      "client": "Client Name",
+      "year": "2023",
+      "split": 2,
+      "items": [
+        {
+          "ratio": "260/207",
+          "label": "Signage mockup",
+          "alt": ""
+        },
+        {
+          "ratio": "260/207",
+          "label": "Pattern mockup",
+          "alt": ""
+        },
+        {
+          "ratio": "260/255",
+          "label": "Brand application",
+          "alt": ""
+        },
+        {
+          "ratio": "260/70",
+          "label": "Logo construction",
+          "alt": ""
+        },
+        {
+          "ratio": "260/90",
+          "label": "Logo variations",
+          "alt": ""
+        }
+      ]
+    },
+    {
+      "heading": "Logo/Visual Identity",
+      "client": "Client Name",
+      "year": "2023",
+      "split": 3,
+      "items": [
+        {
+          "ratio": "260/255",
+          "label": "Logo",
+          "alt": ""
+        },
+        {
+          "ratio": "260/70",
+          "label": "Stationery strip",
+          "alt": ""
+        },
+        {
+          "ratio": "260/90",
+          "label": "Business card",
+          "alt": ""
+        },
+        {
+          "ratio": "260/207",
+          "label": "Roll-up banner",
+          "alt": ""
+        },
+        {
+          "ratio": "260/207",
+          "label": "Signage mockup",
+          "alt": ""
+        }
+      ]
+    }
+  ]
+}

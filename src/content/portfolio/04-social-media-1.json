@@ -1,0 +1,54 @@
+{
+  "order": 4,
+  "layout": "feature-left",
+  "anchor": "pf-social-1",
+  "columns": 3,
+  "mobileColumns": 2,
+  "proportions": [
+    376,
+    719
+  ],
+  "projects": [
+    {
+      "heading": "Social Media Designs",
+      "client": "Client Name",
+      "items": [
+        {
+          "ratio": "376/451",
+          "label": "Featured flyer",
+          "alt": ""
+        },
+        {
+          "ratio": "223/267",
+          "label": "Flyer 1",
+          "alt": ""
+        },
+        {
+          "ratio": "223/267",
+          "label": "Flyer 2",
+          "alt": ""
+        },
+        {
+          "ratio": "223/267",
+          "label": "Flyer 3",
+          "alt": ""
+        },
+        {
+          "ratio": "223/267",
+          "label": "Flyer 4",
+          "alt": ""
+        },
+        {
+          "ratio": "223/267",
+          "label": "Flyer 5",
+          "alt": ""
+        },
+        {
+          "ratio": "223/267",
+          "label": "Flyer 6",
+          "alt": ""
+        }
+      ]
+    }
+  ]
+}

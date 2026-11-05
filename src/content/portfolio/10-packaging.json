@@ -1,0 +1,29 @@
+{
+  "order": 10,
+  "layout": "grid",
+  "anchor": "pf-packaging",
+  "columns": 3,
+  "mobile": "carousel",
+  "projects": [
+    {
+      "heading": "Product Packaging",
+      "items": [
+        {
+          "ratio": "383/469",
+          "label": "Packaging 1",
+          "alt": ""
+        },
+        {
+          "ratio": "383/469",
+          "label": "Packaging 2",
+          "alt": ""
+        },
+        {
+          "ratio": "383/469",
+          "label": "Packaging 3",
+          "alt": ""
+        }
+      ]
+    }
+  ]
+}

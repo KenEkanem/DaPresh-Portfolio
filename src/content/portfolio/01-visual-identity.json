@@ -1,0 +1,48 @@
+{
+  "order": 1,
+  "layout": "showcase",
+  "anchor": "pf-visual-identity",
+  "proportions": [
+    448,
+    622
+  ],
+  "projects": [
+    {
+      "heading": "Logo/Visual Identity",
+      "client": "Client Name",
+      "year": "2024",
+      "items": [
+        {
+          "ratio": "215/203",
+          "label": "Logo",
+          "alt": ""
+        },
+        {
+          "ratio": "233/203",
+          "label": "Business card",
+          "alt": ""
+        },
+        {
+          "ratio": "622/316",
+          "label": "Brand board",
+          "alt": ""
+        },
+        {
+          "ratio": "360/204",
+          "label": "Apparel mockup",
+          "alt": ""
+        },
+        {
+          "ratio": "355/204",
+          "label": "Merch mockup",
+          "alt": ""
+        },
+        {
+          "ratio": "355/204",
+          "label": "Accessories mockup",
+          "alt": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "title": "Portfolio",
+  "categories": [
+    {
+      "title": "Logo Branding / Visual Identity",
+      "target": "pf-visual-identity",
+      "cover": {
+        "ratio": "234/256",
+        "label": "Cover image",
+        "alt": ""
+      }
+    },
+    {
+      "title": "Flyers for Social Media",
+      "target": "pf-social-1",
+      "cover": {
+        "ratio": "234/256",
+        "label": "Cover image",
+        "alt": ""
+      }
+    },
+    {
+      "title": "Church and Events",
+      "target": "pf-events-1",
+      "cover": {
+        "ratio": "234/256",
+        "label": "Cover image",
+        "alt": ""
+      }
+    },
+    {
+      "title": "Product Packaging",
+      "target": "pf-packaging",
+      "cover": {
+        "ratio": "234/256",
+        "label": "Cover image",
+        "alt": ""
+      }
+    }
+  ]
+}

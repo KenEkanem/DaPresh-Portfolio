@@ -1,0 +1,43 @@
+{
+  "order": 5,
+  "layout": "feature-center",
+  "anchor": "pf-social-2",
+  "proportions": [
+    259,
+    532,
+    259
+  ],
+  "projects": [
+    {
+      "heading": "Social Media Designs",
+      "client": "Client Name",
+      "items": [
+        {
+          "ratio": "532/532",
+          "label": "Featured post",
+          "alt": ""
+        },
+        {
+          "ratio": "259/259",
+          "label": "Post 1",
+          "alt": ""
+        },
+        {
+          "ratio": "259/259",
+          "label": "Post 2",
+          "alt": ""
+        },
+        {
+          "ratio": "259/259",
+          "label": "Post 3",
+          "alt": ""
+        },
+        {
+          "ratio": "259/259",
+          "label": "Post 4",
+          "alt": ""
+        }
+      ]
+    }
+  ]
+}

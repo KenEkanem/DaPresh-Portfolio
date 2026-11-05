@@ -1,0 +1,47 @@
+---
+/** Portfolio page heading: TITLE / Client / Year, with the yellow bar after the last line (as in the PDF). */
+interface Props {
+  id?: string;
+  heading: string;
+  client?: string;
+  year?: string;
+}
+const { id, heading, client, year } = Astro.props;
+const lines = [client, year && `Year: ${year}`].filter(Boolean) as string[];
+---
+
+<header class="pf-heading">
+  <h2 id={id}>{heading}</h2>
+  {
+    lines.map((line, i) => (
+      <p class="meta">
+        {line}
+        {i === lines.length - 1 && <span class="accent-bar bar-inline" />}
+      </p>
+    ))
+  }
+  {lines.length === 0 && <span class="accent-bar bar-below" />}
+</header>
+
+<style>
+  .pf-heading { margin-bottom: clamp(1rem, 2.5vh, 2rem); }
+  h2 {
+    margin: 0;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: clamp(1.35rem, 2.05vw, 2rem);
+    line-height: 1.05;
+    letter-spacing: 0.01em;
+  }
+  .meta {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: clamp(1rem, 4vw, 3.5rem);
+    font-weight: 300;
+    font-size: clamp(1.1rem, 1.7vw, 1.6rem);
+    line-height: 1.15;
+  }
+  .bar-inline { width: clamp(70px, 7.5vw, 110px); flex: none; }
+  .bar-below { margin-top: 0.5rem; width: clamp(70px, 7.5vw, 110px); }
+</style>

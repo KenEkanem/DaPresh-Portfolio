@@ -1,4 +1,4 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection, z, type SchemaContext } from 'astro:content';
 import { glob } from 'astro/loaders';
 
 /**
@@ -106,4 +106,71 @@ const brand = defineCollection({
     }),
 });
 
-export const collections = { settings, hero, about, resume, brand };
+/* ───────────── Portfolio ───────────── */
+
+/**
+ * One image slot. `ratio` ("width/height", e.g. "4/5") fixes the slot's shape, so the
+ * layout stays identical whether the slot shows a placeholder or a real image.
+ */
+const tile = (image: SchemaContext['image']) =>
+  z.object({
+    image: image().optional(),
+    alt: z.string().default(''),
+    ratio: z.string().regex(/^\d+(\.\d+)?\/\d+(\.\d+)?$/, 'Use "width/height", e.g. "4/5"'),
+    label: z.string().optional(),
+  });
+
+/** Portfolio overview page: heading + category cards. */
+const portfolio = defineCollection({
+  loader: singleton('portfolio.json'),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      categories: z.array(
+        z.object({
+          title: z.string(),
+          /** anchor of the portfolio page the card jumps to, e.g. "pf-visual-identity" */
+          target: z.string(),
+          cover: tile(image),
+        }),
+      ),
+    }),
+});
+
+/**
+ * Each file in src/content/portfolio/ is one full-screen portfolio page.
+ * `layout` picks the arrangement (see PortfolioPage.astro).
+ */
+const portfolioPages = defineCollection({
+  loader: glob({ pattern: '*.json', base: './src/content/portfolio' }),
+  schema: ({ image }) =>
+    z.object({
+      order: z.number(),
+      anchor: z.string(),
+      layout: z.enum(['showcase', 'duo', 'grid', 'feature-left', 'feature-center', 'justified']),
+      /** grid / feature layouts: columns of small tiles on desktop */
+      columns: z.number().int().min(1).max(6).default(3),
+      /** columns on phones (ignored when mobile is "carousel") */
+      mobileColumns: z.number().int().min(1).max(3).default(2),
+      /** "carousel" = swipeable row on phones instead of a grid */
+      mobile: z.enum(['grid', 'carousel']).default('grid'),
+      /** relative column widths for showcase / feature layouts, measured from the PDF */
+      proportions: z.array(z.number()).optional(),
+      /** justified layout: how many images sit in each row */
+      rows: z.array(z.number().int().min(1)).optional(),
+      projects: z
+        .array(
+          z.object({
+            heading: z.string(),
+            client: z.string().optional(),
+            year: z.string().optional(),
+            /** duo layout: how many tiles go in the first column */
+            split: z.number().int().optional(),
+            items: z.array(tile(image)).min(1),
+          }),
+        )
+        .min(1),
+    }),
+});
+
+export const collections = { settings, hero, about, resume, brand, portfolio, portfolioPages };

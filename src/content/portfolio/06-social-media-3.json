@@ -1,0 +1,54 @@
+{
+  "order": 6,
+  "layout": "feature-left",
+  "anchor": "pf-social-3",
+  "columns": 3,
+  "mobileColumns": 3,
+  "proportions": [
+    452,
+    690
+  ],
+  "projects": [
+    {
+      "heading": "Social Media Designs",
+      "client": "Client Name",
+      "items": [
+        {
+          "ratio": "452/452",
+          "label": "Featured post",
+          "alt": ""
+        },
+        {
+          "ratio": "214/214",
+          "label": "Post 1",
+          "alt": ""
+        },
+        {
+          "ratio": "214/214",
+          "label": "Post 2",
+          "alt": ""
+        },
+        {
+          "ratio": "214/214",
+          "label": "Post 3",
+          "alt": ""
+        },
+        {
+          "ratio": "214/214",
+          "label": "Post 4",
+          "alt": ""
+        },
+        {
+          "ratio": "214/214",
+          "label": "Post 5",
+          "alt": ""
+        },
+        {
+          "ratio": "214/214",
+          "label": "Post 6",
+          "alt": ""
+        }
+      ]
+    }
+  ]
+}

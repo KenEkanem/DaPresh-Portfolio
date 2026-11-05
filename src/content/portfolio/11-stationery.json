@@ -1,0 +1,51 @@
+{
+  "order": 11,
+  "layout": "justified",
+  "anchor": "pf-stationery",
+  "rows": [
+    4,
+    3
+  ],
+  "projects": [
+    {
+      "heading": "Jotters and Stationeries",
+      "items": [
+        {
+          "ratio": "418/220",
+          "label": "Jotter mockup",
+          "alt": ""
+        },
+        {
+          "ratio": "211/218",
+          "label": "Business cards",
+          "alt": ""
+        },
+        {
+          "ratio": "211/218",
+          "label": "Brochure",
+          "alt": ""
+        },
+        {
+          "ratio": "211/218",
+          "label": "Brochure",
+          "alt": ""
+        },
+        {
+          "ratio": "416/220",
+          "label": "Jotter mockup",
+          "alt": ""
+        },
+        {
+          "ratio": "312/218",
+          "label": "Business cards",
+          "alt": ""
+        },
+        {
+          "ratio": "357/218",
+          "label": "Tri-fold brochure",
+          "alt": ""
+        }
+      ]
+    }
+  ]
+}

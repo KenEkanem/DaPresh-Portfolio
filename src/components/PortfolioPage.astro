@@ -1,0 +1,319 @@
+---
+/**
+ * One full-screen portfolio page, driven by a JSON file in src/content/portfolio/.
+ *
+ * Layouts (all measured from the PDF):
+ *  - showcase       heading + 2 tiles left, big tile right, a row of tiles below   (p7)
+ *  - duo            two projects side by side, each a 2-column mosaic              (p8)
+ *  - grid           equal columns                                                   (p9, 13, 14, 16)
+ *  - feature-left   heading + big tile left, grid of smaller tiles right            (p10, 12)
+ *  - feature-center 2 tiles | big tile | 2 tiles                                    (p11)
+ *  - justified      rows of mixed-width tiles that share one height per row        (p15, 17)
+ *
+ * Trick used throughout: inside a `.row`, each tile gets `flex-grow: <its ratio>`, so
+ * widths are proportional to aspect ratios and every tile in the row ends up the same height.
+ */
+import type { CollectionEntry } from 'astro:content';
+import Tile from './Tile.astro';
+import PortfolioHeading from './PortfolioHeading.astro';
+import ScrollCue from './ScrollCue.astro';
+
+interface Props {
+  page: CollectionEntry<'portfolioPages'>;
+  next?: { href: string; label: string };
+}
+const { page, next } = Astro.props;
+const d = page.data;
+const [first] = d.projects;
+const items = first.items;
+const titleId = `${d.anchor}-title`;
+
+const fr = (n?: number[], fallback = '1fr 1fr') => (n?.length ? n.map((x) => `${x}fr`).join(' ') : fallback);
+
+// justified: split items into rows by the counts in `rows`
+const rows: (typeof items)[] = [];
+if (d.layout === 'justified') {
+  let i = 0;
+  for (const count of d.rows ?? [items.length]) {
+    rows.push(items.slice(i, i + count));
+    i += count;
+  }
+  if (i < items.length) rows.push(items.slice(i));
+}
+
+// Phone rows for the justified layout: pack ~2 images' worth of width per row, never leave a
+// narrow image alone on a row (it would blow up into a huge square), let wide images sit alone.
+const ratioOf = (it: (typeof items)[number]) => {
+  const [w, h] = it.ratio.split('/').map(Number);
+  return w / h;
+};
+const mobileRows: (typeof items)[] = [];
+if (d.layout === 'justified') {
+  const MAX = 2.2; // sum of aspect ratios per phone row
+  const NARROW = 1.3;
+  let cur: typeof items = [];
+  let sum = 0;
+  for (const it of items) {
+    const r = ratioOf(it);
+    const loneNarrow = cur.length === 1 && ratioOf(cur[0]) < NARROW;
+    if (cur.length && sum + r > MAX && !loneNarrow) {
+      mobileRows.push(cur);
+      cur = [];
+      sum = 0;
+    }
+    cur.push(it);
+    sum += r;
+  }
+  if (cur.length === 1 && ratioOf(cur[0]) < NARROW && mobileRows.length) mobileRows[mobileRows.length - 1].push(cur[0]);
+  else if (cur.length) mobileRows.push(cur);
+}
+
+const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
+---
+
+<section
+  id={d.anchor}
+  class:list={['page', 'pf-page', `layout-${d.layout}`, { 'm-carousel': d.mobile === 'carousel' }]}
+  data-nav="portfolio"
+  aria-labelledby={titleId}
+  style={style}
+>
+  <div class="container">
+    {/* ───── heading shown above the content (most layouts) ───── */}
+    {
+      ['grid', 'feature-center', 'justified'].includes(d.layout) && (
+        <PortfolioHeading id={titleId} heading={first.heading} client={first.client} year={first.year} />
+      )
+    }
+
+    {
+      d.layout === 'showcase' && (
+        <div class="showcase">
+          <div class="sc-top" style={`grid-template-columns: ${fr(d.proportions, '448fr 622fr')}`}>
+            <div class="sc-left">
+              <PortfolioHeading id={titleId} heading={first.heading} client={first.client} year={first.year} />
+              <div class="row sc-pair">
+                {items.slice(0, 2).map((it) => <Tile item={it} sizes="(max-width: 700px) 50vw, 20vw" />)}
+              </div>
+            </div>
+            {items[2] && <Tile class="sc-main" item={items[2]} sizes="(max-width: 700px) 100vw, 55vw" />}
+          </div>
+          <div class="row sc-bottom">
+            {items.slice(3).map((it) => <Tile item={it} sizes="(max-width: 700px) 100vw, 33vw" />)}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      d.layout === 'duo' && (
+        <div class="duo">
+          {d.projects.map((p, pi) => {
+            const split = p.split ?? Math.ceil(p.items.length / 2);
+            return (
+              <article class="duo-project">
+                <PortfolioHeading
+                  id={pi === 0 ? titleId : `${d.anchor}-title-${pi}`}
+                  heading={p.heading}
+                  client={p.client}
+                  year={p.year}
+                />
+                <div class="duo-tiles">
+                  <div class="stack">
+                    {p.items.slice(0, split).map((it) => <Tile item={it} sizes="(max-width: 900px) 50vw, 20vw" />)}
+                  </div>
+                  <div class="stack">
+                    {p.items.slice(split).map((it) => <Tile item={it} sizes="(max-width: 900px) 50vw, 20vw" />)}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )
+    }
+
+    {
+      d.layout === 'grid' && (
+        <div
+          class="grid"
+          {...(d.mobile === 'carousel' ? { tabindex: 0, role: 'region', 'aria-label': `${first.heading} gallery` } : {})}
+        >
+          {items.map((it) => <Tile item={it} sizes={`(max-width: 700px) ${d.mobile === 'carousel' ? 75 : Math.round(100 / d.mobileColumns)}vw, ${Math.round(100 / d.columns)}vw`} />)}
+        </div>
+      )
+    }
+
+    {
+      d.layout === 'feature-left' && (
+        <div class="fl" style={`grid-template-columns: ${fr(d.proportions, '1fr 2fr')}`}>
+          <div class="fl-left">
+            <PortfolioHeading id={titleId} heading={first.heading} client={first.client} year={first.year} />
+            <Tile item={items[0]} sizes="(max-width: 700px) 100vw, 35vw" />
+          </div>
+          <div class="grid fl-smalls">
+            {items.slice(1).map((it) => <Tile item={it} sizes={`(max-width: 700px) ${Math.round(100 / d.mobileColumns)}vw, 20vw`} />)}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      d.layout === 'feature-center' && (
+        <div class="fc" style={`grid-template-columns: ${fr(d.proportions, '1fr 2fr 1fr')}`}>
+          <div class="stack fc-side">
+            {items.slice(1, 3).map((it) => <Tile item={it} sizes="(max-width: 700px) 50vw, 20vw" />)}
+          </div>
+          <Tile class="fc-main" item={items[0]} sizes="(max-width: 700px) 100vw, 45vw" />
+          <div class="stack fc-side">
+            {items.slice(3, 5).map((it) => <Tile item={it} sizes="(max-width: 700px) 50vw, 20vw" />)}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      d.layout === 'justified' && (
+        <>
+          <div class="justified j-desktop">
+            {rows.map((row) => (
+              <div class="row">
+                {row.map((it) => <Tile item={it} sizes="30vw" />)}
+              </div>
+            ))}
+          </div>
+          {/* hidden on desktop; lazy images inside are not downloaded until shown */}
+          <div class="justified j-mobile">
+            {mobileRows.map((row) => (
+              <div class="row">
+                {row.map((it) => <Tile item={it} sizes="60vw" />)}
+              </div>
+            ))}
+          </div>
+        </>
+      )
+    }
+
+    {d.mobile === 'carousel' && <p class="swipe-hint" aria-hidden="true">Swipe to see more →</p>}
+  </div>
+
+  {next && <ScrollCue href={next.href} label={next.label} />}
+</section>
+
+<style>
+  .pf-page {
+    --gap: clamp(0.75rem, 1.6vw, 1.5rem);
+    background: radial-gradient(ellipse 80% 70% at 50% 50%, #121212, #070707 75%);
+  }
+
+  /* ---------- shared building blocks ---------- */
+  .row { display: flex; gap: var(--gap); }
+  .row > :global(.tile) { flex: var(--r) 1 0%; }
+
+  .stack { display: flex; flex-direction: column; gap: var(--gap); }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    gap: var(--gap);
+  }
+
+  /* ---------- showcase ---------- */
+  .showcase { display: grid; gap: var(--gap); }
+  .sc-top { display: grid; gap: var(--gap); }
+  .sc-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+  }
+
+  /* ---------- duo ---------- */
+  .duo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 6vw, 6rem);
+  }
+  .duo-tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--gap);
+    border-radius: 22px;
+    overflow: hidden;
+  }
+  /* both columns stretch to the taller one; spare space goes into the gaps so the bottoms line up */
+  .duo-tiles .stack { gap: calc(var(--gap) * 0.66); justify-content: space-between; }
+
+  /* ---------- feature-left ---------- */
+  .fl { display: grid; gap: var(--gap); align-items: end; }
+  .fl-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-self: stretch;
+    min-width: 0;
+  }
+
+  /* ---------- feature-center ---------- */
+  .fc { display: grid; gap: var(--gap); align-items: center; }
+
+  /* ---------- justified ---------- */
+  .justified { display: grid; gap: var(--gap); }
+  .j-mobile { display: none; }
+
+  .swipe-hint { display: none; }
+
+  /* ═════════════ Tablet ═════════════ */
+  @media (max-width: 1000px) {
+    .grid { grid-template-columns: repeat(min(var(--cols), 3), minmax(0, 1fr)); }
+    .fl-smalls { grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); }
+    .duo { grid-template-columns: 1fr; max-width: 640px; }
+  }
+
+  /* ═════════════ Phone ═════════════ */
+  @media (max-width: 700px) {
+    .grid { grid-template-columns: repeat(var(--cols-m), minmax(0, 1fr)); }
+
+    /* showcase: heading, big tile, pair, then bottom row as 1 wide + 2 */
+    .sc-top { grid-template-columns: 1fr !important; }
+    .sc-left { display: contents; }
+    .sc-left > :global(.pf-heading) { order: -2; }
+    .sc-top :global(.sc-main) { order: -1; }
+    .sc-bottom { flex-wrap: wrap; }
+    .sc-bottom > :global(.tile:first-child) { flex-basis: 100%; }
+    .sc-bottom > :global(.tile:not(:first-child)) { flex: 1 1 calc(50% - var(--gap)); }
+
+    /* feature-left: heading, big tile, then the small grid */
+    .fl { grid-template-columns: 1fr !important; }
+    .fl-smalls { grid-template-columns: repeat(var(--cols-m), minmax(0, 1fr)); }
+
+    /* feature-center: big tile on top, the two side stacks become 2 columns */
+    .fc { grid-template-columns: 1fr 1fr !important; }
+    .fc :global(.fc-main) { grid-column: 1 / -1; order: -1; }
+
+    /* justified: swap to the phone-sized rows computed above */
+    .j-desktop { display: none; }
+    .j-mobile { display: grid; }
+
+    /* carousel: one swipeable row with the next tile peeking in */
+    .m-carousel .grid {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+      margin-inline: calc(var(--gutter) * -1);
+      padding: 0 var(--gutter) 0.75rem;
+      scrollbar-width: none;
+    }
+    .m-carousel .grid::-webkit-scrollbar { display: none; }
+    .m-carousel .grid > :global(.tile) { flex: 0 0 72%; scroll-snap-align: start; }
+    .m-carousel .swipe-hint {
+      display: block;
+      margin: 0.25rem 0 0;
+      text-align: right;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+  }
+</style>

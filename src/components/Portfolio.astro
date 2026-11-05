@@ -1,0 +1,133 @@
+---
+import { getEntry } from 'astro:content';
+import LogoMark from './LogoMark.astro';
+import ScrollCue from './ScrollCue.astro';
+import Tile from './Tile.astro';
+
+interface Props {
+  next?: { href: string; label: string };
+}
+const { next } = Astro.props;
+
+const portfolio = await getEntry('portfolio', 'portfolio');
+if (!portfolio) throw new Error('Missing src/content/site/portfolio.json');
+const { title, categories } = portfolio.data;
+---
+
+<section id="portfolio" class="page portfolio" data-nav="portfolio" aria-labelledby="portfolio-title">
+  <div class="container">
+    <header class="page-heading heading-row">
+      <div>
+        <h2 id="portfolio-title" class="section-title">{title}</h2>
+        <span class="accent-bar"></span>
+      </div>
+      <LogoMark class="pf-mark" filled />
+    </header>
+
+    <ul class="cards" aria-label="Portfolio categories">
+      {
+        categories.map((c) => (
+          <li>
+            <a class="card" href={`#${c.target}`}>
+              <h3>{c.title}</h3>
+              <Tile item={c.cover} sizes="(max-width: 700px) 72vw, 25vw" />
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="swipe-hint" aria-hidden="true">Swipe to see more →</p>
+  </div>
+
+  {next && <ScrollCue href={next.href} label={next.label} />}
+</section>
+
+<style>
+  .portfolio {
+    background:
+      radial-gradient(ellipse 60% 55% at 50% 60%, rgba(120, 130, 150, 0.12), transparent 70%),
+      linear-gradient(180deg, #0b0b0d, #050505);
+  }
+  .heading-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .heading-row :global(.pf-mark) {
+    width: clamp(36px, 4vw, 56px);
+    color: var(--text);
+    margin-right: clamp(0px, 6vw, 7rem);
+  }
+
+  .cards {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(1rem, 2vw, 1.75rem);
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    height: 100%;
+    padding: clamp(1.25rem, 2vw, 1.75rem) clamp(0.9rem, 1.4vw, 1.25rem);
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 45%, rgba(170, 180, 205, 0.28), transparent 75%),
+      linear-gradient(180deg, rgba(60, 64, 74, 0.55), rgba(20, 21, 25, 0.8));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.45);
+    transition: transform 0.25s ease, border-color 0.25s ease;
+    --tile-radius: 16px;
+  }
+  .card:hover,
+  .card:focus-visible {
+    transform: translateY(-6px);
+    border-color: var(--accent);
+  }
+  .card h3 {
+    margin: 0;
+    min-height: 2.4em;
+    text-align: center;
+    font-weight: 800;
+    font-size: clamp(1.05rem, 1.65vw, 1.55rem);
+    line-height: 1.2;
+    display: grid;
+    place-items: center;
+  }
+  .card :global(.tile) { margin-top: auto; }
+
+  .swipe-hint { display: none; }
+
+  /* Tablets: 2 x 2 */
+  @media (max-width: 1000px) {
+    .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+
+  /* Phones: swipeable row with the next card peeking in */
+  @media (max-width: 700px) {
+    .cards {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-padding-inline: var(--gutter);
+      margin-inline: calc(var(--gutter) * -1);
+      padding: 0.5rem var(--gutter) 1.25rem;
+      scrollbar-width: none;
+    }
+    .cards::-webkit-scrollbar { display: none; }
+    .cards li { flex: 0 0 72%; scroll-snap-align: start; }
+    .swipe-hint {
+      display: block;
+      margin: 0;
+      text-align: right;
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+  }
+</style>

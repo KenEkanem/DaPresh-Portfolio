@@ -1,0 +1,66 @@
+{
+  "order": 9,
+  "layout": "justified",
+  "anchor": "pf-events-2",
+  "rows": [
+    5,
+    5
+  ],
+  "projects": [
+    {
+      "heading": "Church, Conferences, Birthdays",
+      "items": [
+        {
+          "ratio": "231/231",
+          "label": "Flyer 1",
+          "alt": ""
+        },
+        {
+          "ratio": "231/231",
+          "label": "Flyer 2",
+          "alt": ""
+        },
+        {
+          "ratio": "205/231",
+          "label": "Flyer 3",
+          "alt": ""
+        },
+        {
+          "ratio": "205/231",
+          "label": "Flyer 4",
+          "alt": ""
+        },
+        {
+          "ratio": "205/231",
+          "label": "Flyer 5",
+          "alt": ""
+        },
+        {
+          "ratio": "231/231",
+          "label": "Flyer 6",
+          "alt": ""
+        },
+        {
+          "ratio": "231/231",
+          "label": "Flyer 7",
+          "alt": ""
+        },
+        {
+          "ratio": "205/231",
+          "label": "Flyer 8",
+          "alt": ""
+        },
+        {
+          "ratio": "205/231",
+          "label": "Flyer 9",
+          "alt": ""
+        },
+        {
+          "ratio": "205/231",
+          "label": "Flyer 10",
+          "alt": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "order": 7,
+  "layout": "grid",
+  "anchor": "pf-book-covers",
+  "columns": 4,
+  "mobile": "carousel",
+  "projects": [
+    {
+      "heading": "Book Covers",
+      "items": [
+        {
+          "ratio": "297/444",
+          "label": "Book cover 1",
+          "alt": ""
+        },
+        {
+          "ratio": "297/444",
+          "label": "Book cover 2",
+          "alt": ""
+        },
+        {
+          "ratio": "297/444",
+          "label": "Book cover 3",
+          "alt": ""
+        },
+        {
+          "ratio": "297/444",
+          "label": "Book cover 4",
+          "alt": ""
+        }
+      ]
+    }
+  ]
+}
