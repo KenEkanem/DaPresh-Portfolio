@@ -1,0 +1,285 @@
+---
+import { getEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import LogoMark from './LogoMark.astro';
+import ScrollCue from './ScrollCue.astro';
+
+interface Props {
+  /** Where the scroll cue on the second Brand page should go (e.g. Portfolio). */
+  next?: { href: string; label: string };
+}
+const { next } = Astro.props;
+
+const brand = await getEntry('brand', 'brand');
+if (!brand) throw new Error('Missing src/content/site/brand.json');
+const b = brand.data;
+---
+
+<!-- ───────────── Page 1: identity + services ───────────── -->
+<section id="brand" class="page brand-identity" data-nav="brand" aria-labelledby="brand-title">
+  <LogoMark class="brand-glow" filled />
+
+  <div class="container brand-grid">
+    <div class="brand-text">
+      <header class="page-heading">
+        <h2 id="brand-title" class="section-title">{b.title}</h2>
+        <span class="accent-bar"></span>
+      </header>
+
+      <h3 class="label">{b.insightTitle}</h3>
+      <p class="lead">{b.insight}</p>
+
+      <h3 class="label">{b.whyTitle}</h3>
+      <p class="lead">{b.why}</p>
+
+      <p class="tagline"><span>{b.taglineLabel}:</span> {b.tagline}</p>
+    </div>
+
+    <div class="services-wrap">
+      <p class="wordmark" aria-hidden="true">{b.wordmark}</p>
+      <div class="glass-card">
+        <h3 class="label">{b.servicesTitle}</h3>
+        <ul class="services">
+          {
+            b.services.map((s) => (
+              <li>
+                <span class="marker" aria-hidden="true">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M10 7l5 5-5 5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                </span>
+                {s}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <ScrollCue href="#brand-values" label="Scroll to who we work for and our core values" />
+</section>
+
+<!-- ───────────── Page 2: audience, why hire us, core values ───────────── -->
+<section id="brand-values" class="page brand-values" data-nav="brand" aria-label="Who we work for and our core values">
+  {
+    b.backgroundImage && (
+      <div class="values-bg" aria-hidden="true">
+        <Image src={b.backgroundImage} alt="" widths={[960, 1440, 1920, 2540]} sizes="100vw" />
+      </div>
+    )
+  }
+
+  <div class="container brand-grid">
+    <div class="brand-text">
+      <h3 class="label">{b.audienceTitle}</h3>
+      <ul class="dash-list">{b.audience.map((a) => <li>{a}</li>)}</ul>
+
+      <h3 class="label hire-title">{b.hireTitle}</h3>
+      {b.hire.map((p) => <p class="lead">{p}</p>)}
+    </div>
+
+    <div class="tree">
+      <h3 class="label tree-title">{b.valuesTitle}</h3>
+      <span class="stem" aria-hidden="true"></span>
+      <ul class="values">{b.values.map((v) => <li>{v}</li>)}</ul>
+    </div>
+  </div>
+
+  {next && <ScrollCue href={next.href} label={next.label} />}
+</section>
+
+<style>
+  ul { list-style: none; margin: 0; padding: 0; }
+
+  .brand-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
+  }
+
+  .label {
+    color: var(--accent);
+    font-weight: 800;
+    font-size: clamp(1.15rem, 1.7vw, 1.6rem);
+    margin: 0 0 0.6rem;
+  }
+  .lead {
+    margin: 0 0 2rem;
+    font-size: clamp(1.05rem, 1.55vw, 1.45rem);
+    font-weight: 300;
+    line-height: 1.4;
+    max-width: 32rem;
+  }
+  .tagline {
+    margin: 0;
+    font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+    font-weight: 300;
+  }
+  .tagline span { font-weight: 500; text-transform: uppercase; }
+
+  /* ---------- Page 1 ---------- */
+  .brand-identity {
+    background: radial-gradient(ellipse 80% 80% at 60% 45%, #151515, #070707 75%);
+  }
+  /* big blurred yellow logo glowing behind the content */
+  .brand-identity :global(.brand-glow) {
+    position: absolute;
+    z-index: -1;
+    left: 50%;
+    top: 55%;
+    translate: -70% -50%;
+    width: clamp(160px, 22vw, 320px);
+    color: var(--accent);
+    opacity: 0.18;
+    filter: blur(28px);
+    pointer-events: none;
+  }
+
+  .services-wrap {
+    position: relative;
+    padding-top: clamp(2.5rem, 5vw, 4.5rem);
+  }
+  .wordmark {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    translate: -50% 0;
+    z-index: 0;
+    margin: 0;
+    white-space: nowrap;
+    color: var(--accent);
+    font-weight: 900;
+    font-style: italic;
+    font-size: clamp(2.6rem, 6.4vw, 6.25rem);
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .glass-card {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 540px);
+    margin: clamp(1.5rem, 3vw, 2.75rem) auto 0;
+    padding: clamp(2rem, 4vw, 3.25rem) clamp(1.5rem, 5vw, 4.5rem);
+    border-radius: 36px;
+    border: 2px solid rgba(255, 255, 255, 0.28);
+    background: linear-gradient(160deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.55));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    box-shadow: inset 0 18px 30px -18px rgba(229, 242, 13, 0.55), 0 30px 60px rgba(0, 0, 0, 0.5);
+  }
+  .services li {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.55rem 0;
+    font-size: clamp(1rem, 1.45vw, 1.3rem);
+    font-weight: 300;
+  }
+  .services li:not(:last-child)::after {
+    /* timeline line between markers */
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: calc(50% + 13px);
+    height: calc(100% - 26px);
+    width: 2px;
+    background: var(--text);
+  }
+  .marker {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border: 2.5px solid var(--text);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+  }
+  .marker svg { width: 15px; height: 15px; }
+
+  /* ---------- Page 2 ---------- */
+  .brand-values { background: #070707; }
+  .values-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    -webkit-mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, #000 55%, transparent 100%);
+    mask-image: radial-gradient(ellipse 85% 85% at 50% 50%, #000 55%, transparent 100%);
+  }
+  .values-bg :global(img) { width: 100%; height: 100%; object-fit: cover; }
+
+  .dash-list { margin-bottom: 2.5rem; }
+  .dash-list li {
+    position: relative;
+    padding-left: 2rem;
+    font-size: clamp(1.05rem, 1.55vw, 1.45rem);
+    font-weight: 300;
+    line-height: 1.4;
+  }
+  .dash-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.7em;
+    width: 0.8rem;
+    height: 3px;
+    background: var(--text);
+  }
+  .hire-title { margin-top: 0.5rem; }
+
+  /* Core values tree */
+  .tree {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: min(100%, 540px);
+    justify-self: center;
+  }
+  .tree-title { margin: 0; text-align: center; }
+  .stem {
+    width: 2px;
+    height: clamp(2rem, 6vh, 3.75rem);
+    margin-top: 0.75rem;
+    background: var(--accent);
+  }
+  .values {
+    position: relative;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: clamp(1.5rem, 6vw, 6rem);
+    row-gap: clamp(2rem, 5vh, 3.75rem);
+    padding-top: clamp(2.5rem, 7vh, 4.5rem);
+  }
+  .values::before {
+    /* bracket from the stem down into the two top boxes */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 25%;
+    right: 25%;
+    height: clamp(2.5rem, 7vh, 4.5rem);
+    border: 2px solid var(--accent);
+    border-bottom: 0;
+  }
+  .values li {
+    display: grid;
+    place-items: center;
+    min-height: clamp(4rem, 9vh, 5rem);
+    padding: 1rem;
+    border: 1.5px solid var(--accent);
+    background: rgba(0, 0, 0, 0.45);
+    text-align: center;
+    font-weight: 700;
+    font-size: clamp(0.95rem, 1.25vw, 1.15rem);
+  }
+  /* second row sits slightly inward, as in the PDF */
+  .values li:nth-child(n + 3) { width: 78%; justify-self: center; }
+
+  @media (max-width: 900px) {
+    .brand-grid { grid-template-columns: 1fr; }
+    .tree { margin-top: 1rem; }
+  }
+</style>

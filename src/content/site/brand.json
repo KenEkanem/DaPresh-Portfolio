@@ -1,0 +1,35 @@
+{
+  "title": "Brand",
+  "insightTitle": "Insight – XplicitDesign",
+  "insight": "We believe great design has the power to shape perceptions, awaken emotions, and make a lasting impact in a visually-driven world.",
+  "whyTitle": "Why We Do It",
+  "why": "To empower businesses and individuals with visually compelling designs that communicate their unique identities and stories, and create lasting impressions.",
+  "taglineLabel": "Tagline",
+  "tagline": "Ideas to identity",
+  "wordmark": "XplicitDesign",
+  "servicesTitle": "Our Services",
+  "services": [
+    "Logo and Brand Identity",
+    "Product Packaging",
+    "Event Branding",
+    "Conference Designs",
+    "Social Media Graphics",
+    "Church Flyers",
+    "Book Covers"
+  ],
+  "audienceTitle": "Who We Work For",
+  "audience": [
+    "Large Scale Businesses",
+    "Startups and Small Businesses",
+    "Corporations",
+    "Creatives and Entrepreneurs"
+  ],
+  "hireTitle": "Why You Should Hire Us",
+  "hire": [
+    "Businesses and individuals often struggle to visually communicate their values and stand out in a saturated market. Many have great ideas but lack the creative direction or execution to translate these ideas into impactful designs.",
+    "XplicitDesign fills this gap by offering designs that don't just look good but are also deeply aligned with the client's brand values and target audience, ensuring both aesthetic appeal and strategic purpose."
+  ],
+  "valuesTitle": "Our Core Values",
+  "values": ["Strategic Thinking", "Clarity & Simplicity", "Authenticity", "Consistency"],
+  "backgroundImage": "../../assets/brand/brand-bg.jpg"
+}

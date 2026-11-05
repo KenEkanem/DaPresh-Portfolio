@@ -80,4 +80,30 @@ const resume = defineCollection({
     }),
 });
 
-export const collections = { settings, hero, about, resume };
+const brand = defineCollection({
+  loader: singleton('brand.json'),
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      // Page 1: identity
+      insightTitle: z.string(),
+      insight: z.string(),
+      whyTitle: z.string(),
+      why: z.string(),
+      taglineLabel: z.string(),
+      tagline: z.string(),
+      wordmark: z.string(),
+      servicesTitle: z.string(),
+      services: z.array(z.string()),
+      // Page 2: audience and values
+      audienceTitle: z.string(),
+      audience: z.array(z.string()),
+      hireTitle: z.string(),
+      hire: z.array(z.string()),
+      valuesTitle: z.string(),
+      values: z.array(z.string()),
+      backgroundImage: image().optional(),
+    }),
+});
+
+export const collections = { settings, hero, about, resume, brand };
