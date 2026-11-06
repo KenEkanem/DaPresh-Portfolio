@@ -1,5 +1,6 @@
 ---
 import { getEntry } from 'astro:content';
+import heroImage from '../assets/hero/hero-desk.jpg';
 import '../styles/global.css';
 
 interface Props {
@@ -12,6 +13,11 @@ if (!settings) throw new Error('Missing src/content/site/settings.json');
 
 const title = Astro.props.title ?? settings.data.siteTitle;
 const description = Astro.props.description ?? settings.data.description;
+// Set SITE_URL to the site's public origin in the hosting environment so
+// crawlers receive absolute URLs when the site is built as static HTML.
+const siteUrl = import.meta.env.SITE_URL ?? Astro.site?.toString() ?? Astro.url.origin;
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
+const socialImageUrl = new URL(heroImage.src, siteUrl).href;
 ---
 
 <!doctype html>
@@ -21,6 +27,18 @@ const description = Astro.props.description ?? settings.data.description;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={settings.data.siteName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta property="og:image:alt" content="Okem Precious at work on a design project" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
     <meta name="theme-color" content="#0a0a0a" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

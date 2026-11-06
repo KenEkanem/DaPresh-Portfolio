@@ -5,5 +5,6 @@ import icon from 'astro-icon';
 // Static output for now (deployable as a Render Static Site).
 // Stage 6 (Keystatic admin) will switch to the Node adapter.
 export default defineConfig({
+  site: 'https://xplicitdesign.kennedyekanem.tech',
   integrations: [icon()],
 });
