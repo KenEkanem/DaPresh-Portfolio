@@ -48,14 +48,14 @@ To add a real image, put it in `src/assets/portfolio/` and add `"image": "../../
 | --- | --- | --- |
 | `showcase` | Heading and 2 tiles on the left, big tile on the right, row of tiles below | Visual identity (one project) |
 | `duo` | Two projects side by side; `split` is how many tiles go in the first column | Visual identity (two projects) |
-| `grid` | Equal columns (`columns`, `mobileColumns`) | Logo marks, book covers, events, packaging |
+| `grid` | Equal columns (`columns`) | Logo marks, book covers, events, packaging |
 | `feature-left` | Heading and big tile on the left, small grid on the right | Social media |
 | `feature-center` | 2 tiles, big tile, 2 tiles | Social media |
 | `justified` | Rows of mixed widths with equal height (`rows` = tiles per row) | Events, stationery |
 
-`"mobile": "carousel"` turns a grid into a swipeable row on phones.
+On phones, every portfolio page becomes a swipeable carousel (one per project, featured image first) with previous/next buttons and a counter.
 
 
 ## Deploying on Render (stages 1 to 5)
 
-Create a **Static Site** with build command `npm install && npm run build` and publish directory `dist`.
+Create a **Static Site** with build command `npm install && npm run build` and publish directory `dist`. The public site URL is `https://xplicitdesign.kennedyekanem.tech`; set Render's `SITE_URL` environment variable to that address so canonical and social preview image URLs use the custom domain.
