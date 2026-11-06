@@ -14,15 +14,23 @@
           "ratio": "418/220",
           "label": "Jotter mockup",
           "alt": "",
-          "title": "Project Title",
-          "client": "Client Name",
+          "title": "Medical Induction Jotter",
+          "client": "Dr. Bliss Jeremiah",
           "date": "2024"
         },
         {
           "ratio": "211/218",
           "label": "Business cards",
           "alt": "",
-          "title": "Project Title",
+          "title": "Business Cards",
+          "client": "GreatMoon Limited",
+          "date": "2024"
+        },
+        {
+          "ratio": "211/218",
+          "label": "Brochure",
+          "alt": "",
+          "title": "Brochure",
           "client": "Client Name",
           "date": "2024"
         },
@@ -30,15 +38,7 @@
           "ratio": "211/218",
           "label": "Brochure",
           "alt": "",
-          "title": "Project Title",
-          "client": "Client Name",
-          "date": "2024"
-        },
-        {
-          "ratio": "211/218",
-          "label": "Brochure",
-          "alt": "",
-          "title": "Project Title",
+          "title": "Brochure",
           "client": "Client Name",
           "date": "2024"
         },
@@ -46,24 +46,24 @@
           "ratio": "416/220",
           "label": "Jotter mockup",
           "alt": "",
-          "title": "Project Title",
-          "client": "Client Name",
+          "title": "Wedding Jotter",
+          "client": "Deborah & Iwinosa",
           "date": "2024"
         },
         {
           "ratio": "312/218",
           "label": "Business cards",
           "alt": "",
-          "title": "Project Title",
-          "client": "Client Name",
+          "title": "Business Card",
+          "client": "Dee More",
           "date": "2024"
         },
         {
           "ratio": "357/218",
           "label": "Tri-fold brochure",
           "alt": "",
-          "title": "Project Title",
-          "client": "Client Name",
+          "title": "Tri-fold Brochure",
+          "client": "GreatMoon Limited",
           "date": "2024"
         }
       ]
