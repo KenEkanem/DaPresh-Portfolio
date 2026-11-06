@@ -1,0 +1,123 @@
+---
+import { getEntry } from 'astro:content';
+import QRCode from 'qrcode';
+import SocialIcons from './SocialIcons.astro';
+
+const contact = await getEntry('contact', 'contact');
+const settings = await getEntry('settings', 'settings');
+if (!contact || !settings) throw new Error('Missing contact.json or settings.json');
+const c = contact.data;
+const { siteName, copyrightYear } = settings.data;
+
+// QR code rendered at build time as crisp SVG (no image file to maintain).
+const qrSvg = c.qr
+  ? await QRCode.toString(c.qr.url, { type: 'svg', margin: 0, errorCorrectionLevel: 'M', color: { dark: '#000000', light: '#ffffff' } })
+  : '';
+const tel = `tel:${c.phone.replace(/[^\d+]/g, '')}`;
+---
+
+<section id="contact" class="page contact" data-nav="contact" aria-labelledby="contact-title">
+  <div class="container contact-main">
+    <header class="page-heading">
+      <h2 id="contact-title" class="section-title">{c.title}</h2>
+      <span class="accent-bar"></span>
+    </header>
+
+    <div class="contact-grid">
+      {
+        c.qr && (
+          <figure class="qr">
+            <div class="qr-code" role="img" aria-label={`QR code: ${c.qr.caption || c.qr.url}`} set:html={qrSvg} />
+            {c.qr.caption && <figcaption>{c.qr.caption}</figcaption>}
+          </figure>
+        )
+      }
+
+      <div class="connect">
+        <h3>{c.connectTitle}</h3>
+        <ul>
+          <li><a class="big" href={tel}>{c.phone}</a></li>
+          <li><a class="big" href={`mailto:${c.email}`}>{c.email}</a></li>
+          {
+            c.links.map((l) => (
+              <li>
+                <a href={l.url} target="_blank" rel="noopener noreferrer">{l.label}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <footer class="container contact-footer">
+    <SocialIcons />
+    <p>{siteName} | © {copyrightYear} | All Rights Reserved</p>
+  </footer>
+</section>
+
+<style>
+  .contact {
+    grid-template-rows: 1fr auto;
+    align-items: stretch;
+    padding-bottom: 0;
+    background: radial-gradient(ellipse 70% 70% at 60% 45%, #141414, #070707 75%);
+  }
+  .contact-main { align-self: center; }
+
+  .contact-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: clamp(2rem, 6vw, 6rem);
+    margin-top: clamp(1rem, 6vh, 5rem);
+  }
+
+  /* QR code on a white card, as in the PDF */
+  .qr { margin: 0; display: grid; justify-items: center; gap: 0.75rem; }
+  .qr-code {
+    width: clamp(150px, 15vw, 210px);
+    padding: clamp(14px, 1.5vw, 22px);
+    background: #fff;
+  }
+  .qr-code :global(svg) { width: 100%; height: auto; }
+  .qr figcaption { font-size: 0.85rem; color: var(--text-muted); letter-spacing: 0.04em; }
+
+  .connect h3 {
+    margin: 0 0 1rem;
+    color: var(--accent);
+    font-weight: 400;
+    text-transform: uppercase;
+    font-size: clamp(1.4rem, 2.1vw, 2rem);
+  }
+  .connect ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+  .connect a {
+    display: inline-block;
+    font-size: clamp(1.05rem, 1.45vw, 1.35rem);
+    font-weight: 300;
+    overflow-wrap: anywhere;
+    transition: color 0.2s;
+  }
+  .connect a.big { font-size: clamp(1.35rem, 2.2vw, 2rem); }
+  .connect a:hover,
+  .connect a:focus-visible { color: var(--accent); }
+
+  .contact-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 2rem;
+  }
+  .contact-footer p { margin: 0; font-size: 1.05rem; }
+
+  /* Phones: contact details first (tap to call / email), QR below */
+  @media (max-width: 700px) {
+    .contact-grid { flex-direction: column-reverse; align-items: stretch; gap: 2.5rem; margin-top: 0.5rem; }
+    .connect a { padding-block: 0.35rem; } /* bigger tap targets */
+    .qr { justify-items: start; }
+    .qr-code { width: 150px; }
+    .contact-footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>

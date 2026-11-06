@@ -8,6 +8,7 @@ import Resume from '../components/Resume.astro';
 import Brand from '../components/Brand.astro';
 import Portfolio from '../components/Portfolio.astro';
 import PortfolioPage from '../components/PortfolioPage.astro';
+import Contact from '../components/Contact.astro';
 
 // Portfolio pages come from src/content/portfolio/*.json, in `order`.
 const pages = (await getCollection('portfolioPages')).sort((a, b) => a.data.order - b.data.order);
@@ -15,7 +16,7 @@ const cue = (i: number) => {
   const nextPage = pages[i];
   return nextPage
     ? { href: `#${nextPage.data.anchor}`, label: `Scroll to ${nextPage.data.projects[0].heading}` }
-    : undefined; // last page: add the Contact cue once Contact exists
+    : { href: '#contact', label: 'Scroll to Contact' }; // after the last portfolio page
 };
 ---
 
@@ -28,6 +29,6 @@ const cue = (i: number) => {
     <Brand next={{ href: '#portfolio', label: 'Scroll to Portfolio' }} />
     <Portfolio next={cue(0)} />
     {pages.map((page, i) => <PortfolioPage page={page} next={cue(i + 1)} />)}
-    <!-- Coming next: Contact -->
+    <Contact />
   </main>
 </BaseLayout>

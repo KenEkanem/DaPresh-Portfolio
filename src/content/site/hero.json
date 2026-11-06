@@ -2,7 +2,9 @@
   "firstName": "Okem",
   "lastName": "Precious",
   "role": "Graphic Designer",
-  "backgroundImage": "../../assets/hero/hero-bg.jpg",
-  "backgroundAlt": "Dark designer desk with a monitor and two desk lamps",
-  "showLogoMark": true
+  "backgroundImage": "../../assets/hero/hero-desk.jpg",
+  "backgroundAlt": "Dark designer desk with a monitor, keyboard and two glowing desk lamps",
+  "focusX": 62,
+  "showLogoMark": true,
+  "logoMark": { "left": 66.7, "top": 25.6, "width": 17.3 }
 }

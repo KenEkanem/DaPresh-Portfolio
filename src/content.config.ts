@@ -38,7 +38,13 @@ const hero = defineCollection({
       // Leave out to use the built-in dark gradient.
       backgroundImage: image().optional(),
       backgroundAlt: z.string().default(''),
+      /** on phones/portrait screens: horizontal point of the photo to keep centred (0–100 %) */
+      focusX: z.number().min(0).max(100).default(50),
       showLogoMark: z.boolean().default(true),
+      /** logo position on the photo, in % of the photo's width/height (so it stays locked to it) */
+      logoMark: z
+        .object({ left: z.number(), top: z.number(), width: z.number() })
+        .default({ left: 66.7, top: 25.6, width: 17.3 }),
     }),
 });
 
@@ -104,6 +110,19 @@ const brand = defineCollection({
       values: z.array(z.string()),
       backgroundImage: image().optional(),
     }),
+});
+
+const contact = defineCollection({
+  loader: singleton('contact.json'),
+  schema: z.object({
+    title: z.string(),
+    connectTitle: z.string(),
+    phone: z.string(),
+    email: z.string().email(),
+    links: z.array(z.object({ label: z.string(), url: z.string().url() })),
+    /** QR code is generated at build time from `url` */
+    qr: z.object({ url: z.string().url(), caption: z.string().default('') }).optional(),
+  }),
 });
 
 /* ───────────── Portfolio ───────────── */
@@ -180,4 +199,4 @@ const portfolioPages = defineCollection({
     }),
 });
 
-export const collections = { settings, hero, about, resume, brand, portfolio, portfolioPages };
+export const collections = { settings, hero, about, resume, brand, contact, portfolio, portfolioPages };

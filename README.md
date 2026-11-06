@@ -6,7 +6,7 @@ Astro site for the Okem Precious / XplicitDesign portfolio. It's built in stages
 2. **About and Resumé** (done)
 3. **Brand** (done)
 4. **Portfolio** (layouts done with placeholder images; real work to be added)
-5. Contact (static)
+5. **Contact** (done)
 6. Admin editor at `/keystatic` (GitHub login, deployed on Render)
 
 ## Run it
@@ -26,10 +26,11 @@ All editable content lives in `src/content/site/` as JSON. There's no content in
 | File | Controls |
 | --- | --- |
 | `settings.json` | Site title, description, copyright year, social links (leave a link `""` to hide its icon) |
-| `hero.json` | Name, role, hero background image, show/hide the logo mark |
+| `hero.json` | Name, role, background image, `focusX` (part of the photo kept in view on phones, 0–100), logo mark on/off and its position on the photo (`logoMark`, in %) |
 | `about.json` | About title, Behance link, bio paragraphs, portrait |
 | `resume.json` | Experience timeline, software skills (`badge` is the 2-letter icon text, `level` is 0–100), design skills, hobbies, background image |
 | `brand.json` | Brand page 1 (insight, why, tagline, wordmark, services) and page 2 (who we work for, why hire us, core values, background image) |
+| `contact.json` | Contact heading, phone, email, links, and the QR code target (`qr.url`, generated at build time) |
 | `portfolio.json` | Portfolio overview: title and the 4 category cards (`target` = the page a card jumps to) |
 | `src/content/portfolio/*.json` | One file per portfolio page (see below) |
 

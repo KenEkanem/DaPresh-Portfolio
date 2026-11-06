@@ -8,32 +8,43 @@ const hero = await getEntry('hero', 'hero');
 const settings = await getEntry('settings', 'settings');
 if (!hero || !settings) throw new Error('Missing hero.json or settings.json');
 
-const { firstName, lastName, role, backgroundImage, backgroundAlt, showLogoMark } = hero.data;
+const { firstName, lastName, role, backgroundImage, backgroundAlt, focusX, showLogoMark, logoMark } = hero.data;
 const { siteName, copyrightYear } = settings.data;
 
-// Aspect ratio of the background "stage" the logo is positioned on.
+// Aspect ratio of the photo "stage" that the logo is positioned on.
 const ratio = backgroundImage ? backgroundImage.width / backgroundImage.height : 16 / 9;
+const vars = `--stage-ratio: ${ratio}; --focus-m: ${focusX / 100}`;
 ---
 
-<section id="home" class="hero" data-nav="home" style={`--stage-ratio: ${ratio}`}>
+<section id="home" class="hero" data-nav="home" style={vars}>
   <!--
-    The stage behaves like object-fit: cover, so the logo mark (positioned in % of the
-    stage) stays locked to the same spot on the photo at every screen size.
+    .hero-media is the visible window onto the photo (the whole hero on desktop, the top
+    two-thirds on portrait screens). .hero-stage inside it behaves like object-fit: cover
+    with a focal point, and the logo is positioned in % of the stage, so it stays locked
+    to the same spot on the photo at every screen size.
   -->
-  <div class="hero-stage" aria-hidden={backgroundImage ? undefined : 'true'}>
-    {
-      backgroundImage && (
-        <Image
-          src={backgroundImage}
-          alt={backgroundAlt}
-          widths={[960, 1440, 1920, 2560]}
-          sizes="(max-width: 640px) 300vw, 100vw"
-          loading="eager"
-          fetchpriority="high"
-        />
-      )
-    }
-    {showLogoMark && <LogoMark class="hero-mark" />}
+  <div class="hero-media">
+    <div class="hero-stage">
+      {
+        backgroundImage && (
+          <Image
+            src={backgroundImage}
+            alt={backgroundAlt}
+            widths={[640, 960, 1440, backgroundImage.width]}
+            sizes="(max-aspect-ratio: 4/5) 100vh, 100vw"
+            loading="eager"
+            fetchpriority="high"
+          />
+        )
+      }
+      {
+        showLogoMark && (
+          <div class="mark" style={`left: ${logoMark.left}%; top: ${logoMark.top}%; width: ${logoMark.width}%`}>
+            <LogoMark />
+          </div>
+        )
+      }
+    </div>
   </div>
   <div class="hero-shade" aria-hidden="true"></div>
 
@@ -61,23 +72,31 @@ const ratio = backgroundImage ? backgroundImage.width / backgroundImage.height :
     padding-top: var(--header-h);
     overflow: hidden;
     isolation: isolate;
-    container-type: size;
     background: #030303;
+    --focus: 0.5; /* horizontal focal point of the photo (0–1) */
   }
 
-  /* ---------- background stage ---------- */
-  .hero-stage {
+  /* ---------- photo ---------- */
+  .hero-media {
     position: absolute;
+    inset: 0;
     z-index: -2;
-    left: 50%;
+    overflow: hidden;
+    container-type: size;
+  }
+  .hero-stage {
+    /* cover the window, but don't upscale past ~2400px on huge screens */
+    --w: min(max(100cqw, calc(100cqh * var(--stage-ratio))), 2400px);
+    position: absolute;
     top: 50%;
-    translate: -50% -50%;
-    /* cover the hero, but never blow up past the photo's own size on ultra-wide screens */
-    width: min(max(100cqw, calc(100cqh * var(--stage-ratio))), 2560px);
+    translate: 0 -50%;
+    width: var(--w);
     aspect-ratio: var(--stage-ratio);
-    /* feather all four edges so the photo melts into the dark page background */
-    --fade-x: clamp(48px, 9%, 220px);
-    --fade-y: clamp(48px, 12%, 200px);
+    /* keep the focal point centred, but never let the photo's edge show */
+    left: clamp(calc(100cqw - var(--w)), calc(50cqw - var(--focus) * var(--w)), 0px);
+    /* feather all four edges into the page background */
+    --fade-x: clamp(40px, 8%, 200px);
+    --fade-y: clamp(40px, 10%, 180px);
     -webkit-mask-image:
       linear-gradient(to right, transparent, #000 var(--fade-x), #000 calc(100% - var(--fade-x)), transparent),
       linear-gradient(to bottom, transparent, #000 var(--fade-y), #000 calc(100% - var(--fade-y)), transparent);
@@ -86,38 +105,31 @@ const ratio = backgroundImage ? backgroundImage.width / backgroundImage.height :
       linear-gradient(to right, transparent, #000 var(--fade-x), #000 calc(100% - var(--fade-x)), transparent),
       linear-gradient(to bottom, transparent, #000 var(--fade-y), #000 calc(100% - var(--fade-y)), transparent);
     mask-composite: intersect;
-    /* Fallback when no background image is set */
-    background:
-      radial-gradient(ellipse 30% 25% at 72% 32%, rgba(255, 255, 255, 0.08), transparent 70%),
-      radial-gradient(ellipse 60% 50% at 50% 40%, #1c1f24, transparent 75%),
-      linear-gradient(to bottom, #0d0e10 0%, #121417 62%, #050505 63%, #030303 100%);
   }
   .hero-stage :global(img) {
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
-  /* Logo sits on the right lamp, down to the mouse (matches the PDF layout) */
-  .hero-stage :global(.hero-mark) {
+  .mark {
     position: absolute;
-    left: 68.6%;
-    top: 20.2%;
-    width: 21.1%;
     color: #fff;
     filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
     pointer-events: none;
   }
+  .mark :global(svg) { width: 100%; height: auto; }
 
-  /* Keep the left side dark enough for the name */
+  /* keeps the name readable on the left */
   .hero-shade {
     position: absolute;
     inset: 0;
     z-index: -1;
-    background: linear-gradient(to right, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.15) 45%, transparent 65%);
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.55) 0%, rgba(0, 0, 0, 0.2) 45%, transparent 65%);
   }
 
-  /* ---------- content ---------- */
+  /* ---------- text ---------- */
   .hero-content {
     align-self: center;
     padding-bottom: 4vh;
@@ -155,11 +167,45 @@ const ratio = backgroundImage ? backgroundImage.width / backgroundImage.height :
   }
   .copyright { margin: 0; font-size: 1.05rem; }
 
-  /* ---------- phones: show the right-hand part of the desk with the logo ---------- */
+  /* ═════════ Portrait screens (phones, portrait tablets) ═════════
+     Photo fills the top ~2/3, centred on the monitor + right lamp + logo,
+     fading into black; the name sits below it, fully readable. */
+  @media (max-aspect-ratio: 4/5) {
+    .hero { --focus: var(--focus-m); }
+    .hero { --media-h: 64svh; }
+    .hero-media {
+      inset: 0 0 auto 0;
+      height: var(--media-h);
+      -webkit-mask-image: linear-gradient(to bottom, #000 50%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 50%, transparent 100%);
+    }
+    .hero-shade { display: none; }
+    /* name starts over the photo's faded bottom edge, so there's no empty gap */
+    .hero-content {
+      align-self: start;
+      padding-top: max(1rem, calc(var(--media-h) - var(--header-h) - 5.5rem));
+      padding-bottom: 0.5rem;
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
+    }
+    .first { font-size: clamp(2.1rem, 10.5vw, 4.5rem); }
+    .last { font-size: clamp(2.9rem, 14.5vw, 6.5rem); }
+    .hero-role { font-size: clamp(1rem, 4.4vw, 1.75rem); letter-spacing: 0.36em; }
+    .hero-footer { padding-block: 1.5rem 2rem; }
+  }
+
+  /* ═════════ Narrow phones ═════════ */
   @media (max-width: 640px) {
-    .hero-stage { translate: -78% -50%; }
-    .hero-stage :global(.hero-mark) { opacity: 0.35; }
-    .hero-shade { background: rgba(0, 0, 0, 0.35); }
-    .hero-footer { flex-direction: column; align-items: flex-start; }
+    .hero-footer { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .copyright { font-size: 0.9rem; color: var(--text-muted); }
+  }
+
+  /* ═════════ Short landscape screens (phones turned sideways) ═════════ */
+  @media (orientation: landscape) and (max-height: 520px) {
+    .hero-content { padding-bottom: 0; }
+    .first { font-size: clamp(1.75rem, 11vh, 3rem); }
+    .last { font-size: clamp(2.25rem, 16vh, 4.5rem); }
+    .hero-role { font-size: clamp(0.85rem, 4.5vh, 1.25rem); margin: 0.4rem 0 0.6rem; }
+    .hero-footer { padding-block: 0.75rem; }
+    .copyright { font-size: 0.85rem; }
   }
 </style>

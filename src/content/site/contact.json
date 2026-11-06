@@ -1,0 +1,14 @@
+{
+  "title": "Contact",
+  "connectTitle": "Connect with us!",
+  "phone": "+234 703 468 8397",
+  "email": "xplicitdesignhub@gmail.com",
+  "links": [
+    { "label": "behance.net/okemprecious", "url": "https://www.behance.net/okemprecious" },
+    { "label": "instagram.com/xplicitdesign_grfx", "url": "https://instagram.com/xplicitdesign_grfx" }
+  ],
+  "qr": {
+    "url": "https://wa.me/2347034688397",
+    "caption": "Scan to chat on WhatsApp"
+  }
+}
