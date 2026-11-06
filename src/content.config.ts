@@ -173,10 +173,6 @@ const portfolioPages = defineCollection({
       layout: z.enum(['showcase', 'duo', 'grid', 'feature-left', 'feature-center', 'justified']),
       /** grid / feature layouts: columns of small tiles on desktop */
       columns: z.number().int().min(1).max(6).default(3),
-      /** columns on phones (ignored when mobile is "carousel") */
-      mobileColumns: z.number().int().min(1).max(3).default(2),
-      /** "carousel" = swipeable row on phones instead of a grid */
-      mobile: z.enum(['grid', 'carousel']).default('grid'),
       /** relative column widths for showcase / feature layouts, measured from the PDF */
       proportions: z.array(z.number()).optional(),
       /** justified layout: how many images sit in each row */

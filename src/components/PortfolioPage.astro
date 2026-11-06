@@ -10,6 +10,8 @@
  *  - feature-center 2 tiles | big tile | 2 tiles                                    (p11)
  *  - justified      rows of mixed-width tiles that share one height per row        (p15, 17)
  *
+ * Phones (≤700px) get a swipeable Carousel per project instead of these layouts.
+ *
  * Trick used throughout: inside a `.row`, each tile gets `flex-grow: <its ratio>`, so
  * widths are proportional to aspect ratios and every tile in the row ends up the same height.
  */
@@ -17,6 +19,7 @@ import type { CollectionEntry } from 'astro:content';
 import Tile from './Tile.astro';
 import PortfolioHeading from './PortfolioHeading.astro';
 import ScrollCue from './ScrollCue.astro';
+import Carousel from './Carousel.astro';
 
 interface Props {
   page: CollectionEntry<'portfolioPages'>;
@@ -41,44 +44,22 @@ if (d.layout === 'justified') {
   if (i < items.length) rows.push(items.slice(i));
 }
 
-// Phone rows for the justified layout: pack ~2 images' worth of width per row, never leave a
-// narrow image alone on a row (it would blow up into a huge square), let wide images sit alone.
-const ratioOf = (it: (typeof items)[number]) => {
-  const [w, h] = it.ratio.split('/').map(Number);
-  return w / h;
-};
-const mobileRows: (typeof items)[] = [];
-if (d.layout === 'justified') {
-  const MAX = 2.2; // sum of aspect ratios per phone row
-  const NARROW = 1.3;
-  let cur: typeof items = [];
-  let sum = 0;
-  for (const it of items) {
-    const r = ratioOf(it);
-    const loneNarrow = cur.length === 1 && ratioOf(cur[0]) < NARROW;
-    if (cur.length && sum + r > MAX && !loneNarrow) {
-      mobileRows.push(cur);
-      cur = [];
-      sum = 0;
-    }
-    cur.push(it);
-    sum += r;
-  }
-  if (cur.length === 1 && ratioOf(cur[0]) < NARROW && mobileRows.length) mobileRows[mobileRows.length - 1].push(cur[0]);
-  else if (cur.length) mobileRows.push(cur);
-}
+// Phones: each project becomes one carousel. Featured image goes first.
+const featuredFirst = (list: typeof items) =>
+  d.layout === 'showcase' && list[2] ? [list[2], ...list.slice(0, 2), ...list.slice(3)] : list;
+const mobileProjects = d.projects.map((p) => ({ ...p, slides: featuredFirst(p.items) }));
 
-const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
+const style = `--cols: ${d.columns}`;
 ---
 
 <section
   id={d.anchor}
-  class:list={['page', 'pf-page', `layout-${d.layout}`, { 'm-carousel': d.mobile === 'carousel' }]}
+  class:list={['page', 'pf-page', `layout-${d.layout}`]}
   data-nav="portfolio"
   aria-labelledby={titleId}
   style={style}
 >
-  <div class="container">
+  <div class="container pf-desktop">
     {/* ───── heading shown above the content (most layouts) ───── */}
     {
       ['grid', 'feature-center', 'justified'].includes(d.layout) && (
@@ -93,13 +74,13 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
             <div class="sc-left">
               <PortfolioHeading id={titleId} heading={first.heading} title={first.title} client={first.client} date={first.date} />
               <div class="row sc-pair">
-                {items.slice(0, 2).map((it) => <Tile item={it} sizes="(max-width: 700px) 50vw, 20vw" />)}
+                {items.slice(0, 2).map((it) => <Tile item={it} sizes="20vw" />)}
               </div>
             </div>
-            {items[2] && <Tile class="sc-main" item={items[2]} sizes="(max-width: 700px) 100vw, 55vw" />}
+            {items[2] && <Tile class="sc-main" item={items[2]} sizes="55vw" />}
           </div>
           <div class="row sc-bottom">
-            {items.slice(3).map((it) => <Tile item={it} sizes="(max-width: 700px) 100vw, 33vw" />)}
+            {items.slice(3).map((it) => <Tile item={it} sizes="33vw" />)}
           </div>
         </div>
       )
@@ -136,11 +117,8 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
 
     {
       d.layout === 'grid' && (
-        <div
-          class="grid"
-          {...(d.mobile === 'carousel' ? { tabindex: 0, role: 'region', 'aria-label': `${first.heading} gallery` } : {})}
-        >
-          {items.map((it) => <Tile item={it} sizes={`(max-width: 700px) ${d.mobile === 'carousel' ? 75 : Math.round(100 / d.mobileColumns)}vw, ${Math.round(100 / d.columns)}vw`} />)}
+        <div class="grid">
+          {items.map((it) => <Tile item={it} sizes={`(max-width: 1000px) 33vw, ${Math.round(100 / d.columns)}vw`} />)}
         </div>
       )
     }
@@ -150,10 +128,10 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
         <div class="fl" style={`grid-template-columns: ${fr(d.proportions, '1fr 2fr')}`}>
           <div class="fl-left">
             <PortfolioHeading id={titleId} heading={first.heading} title={first.title} client={first.client} date={first.date} />
-            <Tile item={items[0]} sizes="(max-width: 700px) 100vw, 35vw" />
+            <Tile item={items[0]} sizes="35vw" />
           </div>
           <div class="grid fl-smalls">
-            {items.slice(1).map((it) => <Tile item={it} sizes={`(max-width: 700px) ${Math.round(100 / d.mobileColumns)}vw, 20vw`} />)}
+            {items.slice(1).map((it) => <Tile item={it} sizes="20vw" />)}
           </div>
         </div>
       )
@@ -163,11 +141,11 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
       d.layout === 'feature-center' && (
         <div class="fc" style={`grid-template-columns: ${fr(d.proportions, '1fr 2fr 1fr')}`}>
           <div class="stack fc-side">
-            {items.slice(1, 3).map((it) => <Tile item={it} sizes="(max-width: 700px) 50vw, 20vw" />)}
+            {items.slice(1, 3).map((it) => <Tile item={it} sizes="20vw" />)}
           </div>
-          <Tile class="fc-main" item={items[0]} sizes="(max-width: 700px) 100vw, 45vw" />
+          <Tile class="fc-main" item={items[0]} sizes="45vw" />
           <div class="stack fc-side">
-            {items.slice(3, 5).map((it) => <Tile item={it} sizes="(max-width: 700px) 50vw, 20vw" />)}
+            {items.slice(3, 5).map((it) => <Tile item={it} sizes="20vw" />)}
           </div>
         </div>
       )
@@ -175,27 +153,34 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
 
     {
       d.layout === 'justified' && (
-        <>
-          <div class="justified j-desktop">
-            {rows.map((row) => (
-              <div class="row">
-                {row.map((it) => <Tile item={it} sizes="30vw" />)}
-              </div>
-            ))}
-          </div>
-          {/* hidden on desktop; lazy images inside are not downloaded until shown */}
-          <div class="justified j-mobile">
-            {mobileRows.map((row) => (
-              <div class="row">
-                {row.map((it) => <Tile item={it} sizes="60vw" />)}
-              </div>
-            ))}
-          </div>
-        </>
+        <div class="justified">
+          {rows.map((row) => (
+            <div class="row">
+              {row.map((it) => <Tile item={it} sizes="30vw" />)}
+            </div>
+          ))}
+        </div>
       )
     }
 
-    {d.mobile === 'carousel' && <p class="swipe-hint" aria-hidden="true">Swipe to see more →</p>}
+  </div>
+
+  {/* ───── phones: one carousel per project (hidden on larger screens; its lazy images don't load there) ───── */}
+  <div class="container pf-mobile">
+    {
+      mobileProjects.map((p, pi) => (
+        <div class="m-project">
+          <PortfolioHeading
+            id={`${d.anchor}-m-title-${pi}`}
+            heading={p.heading}
+            title={p.title}
+            client={p.client}
+            date={p.date}
+          />
+          <Carousel items={p.slides} label={`${p.heading}${p.client ? ` – ${p.client}` : ''}, gallery`} />
+        </div>
+      ))
+    }
   </div>
 
   {next && <ScrollCue href={next.href} label={next.label} />}
@@ -260,9 +245,8 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
 
   /* ---------- justified ---------- */
   .justified { display: grid; gap: var(--gap); }
-  .j-mobile { display: none; }
 
-  .swipe-hint { display: none; }
+  .pf-mobile { display: none; }
 
   /* ═════════════ Tablet ═════════════ */
   @media (max-width: 1000px) {
@@ -271,50 +255,10 @@ const style = `--cols: ${d.columns}; --cols-m: ${d.mobileColumns}`;
     .duo { grid-template-columns: 1fr; max-width: 640px; }
   }
 
-  /* ═════════════ Phone ═════════════ */
+  /* ═════════════ Phone: carousels instead of the layouts ═════════════ */
   @media (max-width: 700px) {
-    .grid { grid-template-columns: repeat(var(--cols-m), minmax(0, 1fr)); }
-
-    /* showcase: heading, big tile, pair, then bottom row as 1 wide + 2 */
-    .sc-top { grid-template-columns: 1fr !important; }
-    .sc-left { display: contents; }
-    .sc-left > :global(.pf-heading) { order: -2; }
-    .sc-top :global(.sc-main) { order: -1; }
-    .sc-bottom { flex-wrap: wrap; }
-    .sc-bottom > :global(.tile:first-child) { flex-basis: 100%; }
-    .sc-bottom > :global(.tile:not(:first-child)) { flex: 1 1 calc(50% - var(--gap)); }
-
-    /* feature-left: heading, big tile, then the small grid */
-    .fl { grid-template-columns: 1fr !important; }
-    .fl-smalls { grid-template-columns: repeat(var(--cols-m), minmax(0, 1fr)); }
-
-    /* feature-center: big tile on top, the two side stacks become 2 columns */
-    .fc { grid-template-columns: 1fr 1fr !important; }
-    .fc :global(.fc-main) { grid-column: 1 / -1; order: -1; }
-
-    /* justified: swap to the phone-sized rows computed above */
-    .j-desktop { display: none; }
-    .j-mobile { display: grid; }
-
-    /* carousel: one swipeable row with the next tile peeking in */
-    .m-carousel .grid {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scroll-padding-inline: var(--gutter);
-      margin-inline: calc(var(--gutter) * -1);
-      padding: 0 var(--gutter) 0.75rem;
-      scrollbar-width: none;
-    }
-    .m-carousel .grid::-webkit-scrollbar { display: none; }
-    .m-carousel .grid > :global(.tile) { flex: 0 0 72%; scroll-snap-align: start; }
-    .m-carousel .swipe-hint {
-      display: block;
-      margin: 0.25rem 0 0;
-      text-align: right;
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-    }
+    .pf-desktop { display: none; }
+    /* minmax(0, 1fr): let each carousel shrink to the screen so its track scrolls */
+    .pf-mobile { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem; }
   }
 </style>

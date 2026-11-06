@@ -1,0 +1,165 @@
+---
+/**
+ * Phone carousel: one swipeable, snapping row of tiles.
+ * - every slide keeps its image's shape (fixed height, width from the ratio; very wide
+ *   images are capped at the screen width and get shorter instead)
+ * - the next slide peeks in so it's obvious you can swipe
+ * - prev/next buttons + "n / total" counter for keyboard and screen-reader users
+ */
+import type { ComponentProps } from 'astro/types';
+import Tile from './Tile.astro';
+
+type Item = ComponentProps<typeof Tile>['item'];
+interface Props {
+  items: Item[];
+  label: string;
+}
+const { items, label } = Astro.props;
+const ratio = (it: Item) => {
+  const [w, h] = it.ratio.split('/').map(Number);
+  return w / h;
+};
+---
+
+<div class="carousel" data-carousel>
+  <ul class="track" tabindex="0" role="region" aria-roledescription="carousel" aria-label={label}>
+    {
+      items.map((it, i) => (
+        <li class="slide" style={`--r: ${ratio(it)}`} aria-roledescription="slide" aria-label={`${i + 1} of ${items.length}`}>
+          <Tile item={it} sizes="85vw" />
+        </li>
+      ))
+    }
+  </ul>
+
+  {
+    items.length > 1 && (
+      <div class="controls">
+        <button type="button" class="nav prev" aria-label="Previous image" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+        </button>
+        <span class="count" aria-live="polite">
+          <span class="cur">1</span> / {items.length}
+        </span>
+        <button type="button" class="nav next" aria-label="Next image">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+        </button>
+      </div>
+    )
+  }
+</div>
+
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
+    const track = root.querySelector<HTMLElement>('.track')!;
+    const slides = [...track.querySelectorAll<HTMLElement>('.slide')];
+    const cur = root.querySelector<HTMLElement>('.cur');
+    const prev = root.querySelector<HTMLButtonElement>('.prev');
+    const next = root.querySelector<HTMLButtonElement>('.next');
+    if (!slides.length) return;
+
+    const pad = () => parseFloat(getComputedStyle(track).scrollPaddingLeft) || 0;
+
+    // index of the slide currently snapped to the start
+    const index = () => {
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 2;
+      if (atEnd) return slides.length - 1;
+      let best = 0;
+      let bestDist = Infinity;
+      slides.forEach((s, i) => {
+        const dist = Math.abs(s.offsetLeft - pad() - track.scrollLeft);
+        if (dist < bestDist) [best, bestDist] = [i, dist];
+      });
+      return best;
+    };
+
+    const update = () => {
+      const i = index();
+      if (cur) cur.textContent = String(i + 1);
+      if (prev) prev.disabled = i === 0;
+      if (next) next.disabled = i === slides.length - 1;
+    };
+
+    const go = (step: number) => {
+      const i = Math.max(0, Math.min(slides.length - 1, index() + step));
+      track.scrollTo({ left: slides[i].offsetLeft - pad(), behavior: reduceMotion ? 'auto' : 'smooth' });
+    };
+
+    prev?.addEventListener('click', () => go(-1));
+    next?.addEventListener('click', () => go(1));
+    track.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+    });
+
+    let raf = 0;
+    track.addEventListener('scroll', () => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(update);
+    }, { passive: true });
+    update();
+  });
+</script>
+
+<style>
+  .carousel { --slide-h: clamp(240px, 50svh, 460px); }
+
+  .track {
+    position: relative; /* slides' offsetLeft is measured from here */
+    list-style: none;
+    margin: 0 calc(var(--gutter) * -1);
+    padding: 0.25rem var(--gutter) 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.9rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--gutter);
+    scrollbar-width: none;
+  }
+  .track::-webkit-scrollbar { display: none; }
+  .track:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+  .slide {
+    flex: 0 0 auto;
+    /* height fixed by --slide-h, width follows the image ratio, capped to the screen */
+    width: min(85vw, calc(var(--slide-h) * var(--r)));
+    scroll-snap-align: start;
+  }
+  .slide:last-child { margin-right: var(--gutter); }
+
+  .controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+  }
+  .count {
+    min-width: 3.5em;
+    text-align: center;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .nav {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, opacity 0.2s;
+  }
+  .nav svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; }
+  .nav:hover:not(:disabled),
+  .nav:focus-visible { border-color: var(--accent); color: var(--accent); }
+  .nav:disabled { opacity: 0.3; cursor: default; }
+</style>

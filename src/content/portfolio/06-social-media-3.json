@@ -3,7 +3,6 @@
   "layout": "feature-left",
   "anchor": "pf-social-3",
   "columns": 3,
-  "mobileColumns": 3,
   "proportions": [
     452,
     690

@@ -3,7 +3,6 @@
   "layout": "grid",
   "anchor": "pf-book-covers",
   "columns": 4,
-  "mobile": "carousel",
   "projects": [
     {
       "heading": "Book Covers",

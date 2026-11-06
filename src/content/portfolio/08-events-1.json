@@ -3,7 +3,6 @@
   "layout": "grid",
   "anchor": "pf-events-1",
   "columns": 5,
-  "mobileColumns": 2,
   "projects": [
     {
       "heading": "Church, Conferences, Birthdays",

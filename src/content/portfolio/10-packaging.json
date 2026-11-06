@@ -3,7 +3,6 @@
   "layout": "grid",
   "anchor": "pf-packaging",
   "columns": 3,
-  "mobile": "carousel",
   "projects": [
     {
       "heading": "Product Packaging",
