@@ -3,8 +3,8 @@
   "lastName": "Precious",
   "role": "Graphic Designer",
   "backgroundImage": "../../assets/hero/hero-desk.jpg",
-  "backgroundAlt": "Dark designer desk with a monitor, keyboard and two glowing desk lamps",
+  "backgroundAlt": "Dark designer desk lit in blue, with a monitor showing a starry mountain sky between two glowing desk lamps",
   "focusX": 62,
   "showLogoMark": true,
-  "logoMark": { "left": 66.7, "top": 25.6, "width": 17.3 }
+  "logoMark": { "left": 67.5, "top": 27, "width": 12 }
 }
