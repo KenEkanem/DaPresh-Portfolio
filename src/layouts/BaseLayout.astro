@@ -15,7 +15,13 @@ const title = Astro.props.title ?? settings.data.siteTitle;
 const description = Astro.props.description ?? settings.data.description;
 // Set SITE_URL to the site's public origin in the hosting environment so
 // crawlers receive absolute URLs when the site is built as static HTML.
-const siteUrl = import.meta.env.SITE_URL ?? Astro.site?.toString() ?? Astro.url.origin;
+const configuredSiteUrl =
+  import.meta.env.SITE_URL?.trim() || Astro.site?.toString() || Astro.url.origin;
+const siteUrl = new URL(
+  /^https?:\/\//i.test(configuredSiteUrl)
+    ? configuredSiteUrl
+    : `https://${configuredSiteUrl.replace(/^\/+/, '')}`,
+);
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
 const socialImageUrl = new URL(heroImage.src, siteUrl).href;
 ---
