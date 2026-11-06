@@ -1,0 +1,91 @@
+---
+/**
+ * Phone preview of one project: its first few images in rows of two (wide images get
+ * a row to themselves). Tiles in a row share one height, widths follow their ratios.
+ * The last visible tile shows "+N" when there are more; every tile opens the viewer.
+ *
+ * Must sit inside a `data-gallery-scope` whose GalleryData lists the same items in the same order.
+ */
+import Tile from './Tile.astro';
+import { ratioOf, type GalleryItem } from '../lib/gallery';
+
+interface Props {
+  items: GalleryItem[];
+  /** how many tiles to show before collapsing the rest into "+N" */
+  max?: number;
+}
+const { items, max = 4 } = Astro.props;
+
+const WIDE = 1.6; // ratios at or above this are shown full width
+
+const rows: number[][] = [];
+let i = 0;
+while (i < items.length && i < max) {
+  const a = ratioOf(items[i].ratio);
+  const b = items[i + 1] ? ratioOf(items[i + 1].ratio) : undefined;
+  if (a >= WIDE || b === undefined || b >= WIDE) {
+    rows.push([i]);
+    i += 1;
+  } else {
+    rows.push([i, i + 1]);
+    i += 2;
+  }
+}
+const shown = i;
+const more = items.length - shown;
+---
+
+<div class="mosaic">
+  {
+    rows.map((row) => (
+      <div class:list={['m-row', { solo: row.length === 1 }]}>
+        {row.map((n) => (
+          <Tile item={items[n]} open={n} more={n === shown - 1 ? more : 0} sizes={row.length === 1 ? '100vw' : '50vw'} />
+        ))}
+      </div>
+    ))
+  }
+</div>
+
+{
+  items.length > 1 && (
+    <button type="button" class="view-all" data-open="0">
+      View all {items.length} images
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
+    </button>
+  )
+}
+
+<style>
+  .mosaic {
+    --gap: 0.6rem;
+    --tile-radius: 10px;
+    display: grid;
+    gap: var(--gap);
+  }
+  .m-row { display: flex; gap: var(--gap); }
+  .m-row > :global(.tile) { flex: var(--r) 1 0%; }
+  /* a lone portrait image shouldn't fill a whole screen */
+  .solo { justify-content: center; }
+  .solo > :global(.tile) { flex: 0 1 auto; width: min(100%, 62svh * var(--r)); }
+
+  .view-all {
+    margin-top: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 0.5rem 1.1rem 0.5rem 1.25rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .view-all svg { width: 18px; height: 18px; fill: none; stroke: var(--accent); stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; }
+  .view-all:hover,
+  .view-all:focus-visible { border-color: var(--accent); color: var(--accent); }
+</style>

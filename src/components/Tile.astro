@@ -18,8 +18,12 @@ interface Props {
   };
   sizes?: string;
   class?: string;
+  /** index of this tile in its gallery: makes the tile a button that opens the full-screen viewer */
+  open?: number;
+  /** shows a "+N" overlay (the gallery has N more images than are shown) */
+  more?: number;
 }
-const { item, sizes = '(max-width: 640px) 100vw, 33vw', class: className } = Astro.props;
+const { item, sizes = '(max-width: 640px) 100vw, 33vw', class: className, open, more = 0 } = Astro.props;
 
 const [w, h] = item.ratio.split('/').map(Number);
 const r = w / h;
@@ -31,15 +35,26 @@ const ratioLabel = match ? `${match[0]}:${match[1]}` : `${w}:${h}`;
 
 const meta = [item.client, item.date].filter(Boolean).join(' · ');
 const hasCaption = Boolean(item.title || meta);
+
+const name = item.title ?? item.label ?? item.alt;
+const Media = open === undefined ? 'div' : 'button';
+const mediaAttrs =
+  open === undefined
+    ? {}
+    : {
+        type: 'button' as const,
+        'data-open': open,
+        'aria-label': more > 0 ? `View all images (${more} more)` : `View full size${name ? `: ${name}` : ''}`,
+      };
 ---
 
 <figure class:list={['tile', className]} style={`--r: ${r}`}>
-  <div class="media">
+  <Media class:list={['media', { zoomable: open !== undefined }]} {...mediaAttrs}>
   {
     item.image ? (
       <Image src={item.image} alt={item.alt} sizes={sizes} widths={[400, 800, 1200, 1600]} />
     ) : (
-      <div class="ph" role="img" aria-label={`Placeholder${item.label ? `: ${item.label}` : ''}, ${ratioLabel}`}>
+      <span class="ph" role="img" aria-label={`Placeholder${item.label ? `: ${item.label}` : ''}, ${ratioLabel}`}>
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5" />
           <circle cx="9" cy="10" r="1.8" fill="none" stroke="currentColor" stroke-width="1.5" />
@@ -47,10 +62,11 @@ const hasCaption = Boolean(item.title || meta);
         </svg>
         <span class="ph-ratio">{ratioLabel}</span>
         {item.label && <span class="ph-label">{item.label}</span>}
-      </div>
+      </span>
     )
   }
-  </div>
+  {more > 0 && <span class="more" aria-hidden="true">+{more}</span>}
+  </Media>
   {
     hasCaption && (
       <figcaption>
@@ -81,6 +97,33 @@ const hasCaption = Boolean(item.title || meta);
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+
+  /* tiles that open the full-screen viewer */
+  button.media {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    font: inherit;
+    color: inherit;
+    cursor: zoom-in;
+  }
+  .zoomable :global(img), .zoomable .ph { transition: transform 0.4s ease, filter 0.3s ease; }
+  @media (hover: hover) {
+    .zoomable:hover :global(img), .zoomable:hover .ph { transform: scale(1.03); }
+  }
+  .zoomable:focus-visible { outline-offset: 2px; }
+
+  .more {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0, 0, 0, 0.58);
+    font-weight: 800;
+    font-size: clamp(1.4rem, 7vw, 2.2rem);
+    letter-spacing: 0.02em;
   }
 
   .ph {

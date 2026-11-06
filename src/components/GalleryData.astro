@@ -1,0 +1,15 @@
+---
+/**
+ * The slides of one gallery, as JSON, for the full-screen viewer (Lightbox.astro).
+ * Put it directly inside the element marked `data-gallery-scope`; any Tile with an
+ * `open` index inside that element opens the viewer on this list.
+ */
+import { safeJson, type Slide } from '../lib/gallery';
+
+interface Props {
+  slides: Slide[];
+}
+const { slides } = Astro.props;
+---
+
+<script is:inline type="application/json" data-gallery set:html={safeJson(slides)} />

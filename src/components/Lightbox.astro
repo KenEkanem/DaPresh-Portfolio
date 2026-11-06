@@ -1,0 +1,437 @@
+---
+/**
+ * Full-screen image viewer, shared by every gallery on the page.
+ *
+ * Any Tile rendered with `open={i}` inside an element marked `data-gallery-scope` opens
+ * this viewer at slide i; the slides come from that scope's <GalleryData>.
+ *
+ * - swipe / arrow keys / buttons to move between images
+ * - double-tap (or double-click) to zoom, then drag to pan
+ * - swipe down, Esc, ✕ or tapping the empty space to close
+ */
+---
+
+<dialog class="lightbox" aria-label="Image viewer" aria-roledescription="carousel">
+  <div class="lb-top">
+    <span class="lb-count" aria-live="polite"></span>
+    <button type="button" class="lb-btn lb-close" aria-label="Close viewer">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+    </button>
+  </div>
+
+  <ul class="lb-track" tabindex="-1"></ul>
+
+  <button type="button" class="lb-btn lb-nav lb-prev" aria-label="Previous image">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+  </button>
+  <button type="button" class="lb-btn lb-nav lb-next" aria-label="Next image">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+  </button>
+
+  <div class="lb-caption">
+    <p class="lb-title"></p>
+    <p class="lb-meta"></p>
+    <p class="lb-hint" aria-hidden="true">
+      <span class="hint-touch">Double-tap to zoom · swipe down to close</span>
+      <span class="hint-mouse">Double-click to zoom · ← → to browse · Esc to close</span>
+    </p>
+  </div>
+</dialog>
+
+<script>
+  import type { Slide } from '../lib/gallery';
+
+  const dialog = document.querySelector<HTMLDialogElement>('.lightbox')!;
+  const track = dialog.querySelector<HTMLUListElement>('.lb-track')!;
+  const count = dialog.querySelector<HTMLElement>('.lb-count')!;
+  const title = dialog.querySelector<HTMLElement>('.lb-title')!;
+  const meta = dialog.querySelector<HTMLElement>('.lb-meta')!;
+  const prev = dialog.querySelector<HTMLButtonElement>('.lb-prev')!;
+  const next = dialog.querySelector<HTMLButtonElement>('.lb-next')!;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let slides: Slide[] = [];
+  let current = 0;
+  let opener: HTMLElement | null = null;
+
+  /* ───────── building ───────── */
+
+  const slideEl = (s: Slide, i: number) => {
+    const li = document.createElement('li');
+    li.className = 'lb-slide';
+    li.setAttribute('aria-roledescription', 'slide');
+    li.setAttribute('aria-label', `${i + 1} of ${slides.length}`);
+    li.style.setProperty('--r', String(s.ratio));
+
+    const frame = document.createElement('div');
+    frame.className = 'lb-frame';
+    if (s.src) {
+      const img = document.createElement('img');
+      img.src = s.src;
+      if (s.srcset) img.srcset = s.srcset;
+      img.sizes = '100vw';
+      img.alt = s.alt;
+      img.decoding = 'async';
+      img.loading = Math.abs(i - current) <= 1 ? 'eager' : 'lazy';
+      img.draggable = false;
+      frame.append(img);
+    } else {
+      const ph = document.createElement('div');
+      ph.className = 'lb-ph';
+      ph.setAttribute('role', 'img');
+      ph.setAttribute('aria-label', `Placeholder${s.label ? `: ${s.label}` : ''}`);
+      ph.innerHTML = '<span class="lb-ph-icon"></span>';
+      const lbl = document.createElement('span');
+      lbl.textContent = s.label ?? 'Image coming soon';
+      ph.append(lbl);
+      frame.append(ph);
+    }
+    li.append(frame);
+    return li;
+  };
+
+  /* ───────── navigation ───────── */
+
+  const indexFromScroll = () => Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+
+  const update = () => {
+    current = Math.max(0, Math.min(slides.length - 1, indexFromScroll()));
+    const s = slides[current];
+    if (!s) return;
+    count.textContent = `${current + 1} / ${slides.length}`;
+    title.textContent = s.label && s.label !== s.caption ? `${s.caption} — ${s.label}` : s.caption;
+    meta.textContent = s.meta;
+    prev.disabled = current === 0;
+    next.disabled = current === slides.length - 1;
+    dialog.classList.toggle('single', slides.length < 2);
+  };
+
+  const goTo = (i: number, smooth = true) => {
+    unzoom();
+    const target = Math.max(0, Math.min(slides.length - 1, i));
+    track.scrollTo({ left: target * track.clientWidth, behavior: smooth && !reduceMotion ? 'smooth' : 'auto' });
+  };
+
+  let raf = 0;
+  track.addEventListener('scroll', () => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(update);
+  }, { passive: true });
+
+  prev.addEventListener('click', () => goTo(current - 1));
+  next.addEventListener('click', () => goTo(current + 1));
+  dialog.querySelector('.lb-close')!.addEventListener('click', () => dialog.close());
+
+  dialog.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(current + 1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current - 1); }
+  });
+
+  // keep the current slide in place when the screen rotates / resizes
+  window.addEventListener('resize', () => {
+    if (dialog.open) track.scrollTo({ left: current * track.clientWidth, behavior: 'auto' });
+  });
+
+  /* ───────── zoom (double-tap / double-click, then drag to pan) ───────── */
+
+  let zoomed: HTMLElement | null = null;
+  let ox = 50, oy = 50; // transform-origin in %
+
+  const setOrigin = (el: HTMLElement) => { el.style.transformOrigin = `${ox}% ${oy}%`; };
+
+  function unzoom() {
+    if (!zoomed) return;
+    zoomed.classList.remove('zoomed');
+    zoomed = null;
+    dialog.classList.remove('is-zoomed');
+  }
+
+  const toggleZoom = (frame: HTMLElement, x: number, y: number) => {
+    if (zoomed) return unzoom();
+    const r = frame.getBoundingClientRect();
+    ox = ((x - r.left) / r.width) * 100;
+    oy = ((y - r.top) / r.height) * 100;
+    setOrigin(frame);
+    frame.classList.add('zoomed');
+    zoomed = frame;
+    dialog.classList.add('is-zoomed');
+  };
+
+  track.addEventListener('dblclick', (e) => {
+    const frame = (e.target as HTMLElement).closest<HTMLElement>('.lb-frame');
+    if (frame) toggleZoom(frame, e.clientX, e.clientY);
+  });
+
+  // double-tap on touch screens (dblclick isn't reliable there)
+  let lastTap = 0;
+  track.addEventListener('touchend', (e) => {
+    if (e.touches.length || drag.moved) return;
+    const now = Date.now();
+    const t = e.changedTouches[0];
+    const frame = (e.target as HTMLElement).closest<HTMLElement>('.lb-frame');
+    if (frame && now - lastTap < 300) {
+      e.preventDefault();
+      toggleZoom(frame, t.clientX, t.clientY);
+      lastTap = 0;
+    } else lastTap = now;
+  });
+
+  // mouse: the zoomed image follows the cursor
+  track.addEventListener('mousemove', (e) => {
+    if (!zoomed) return;
+    const r = zoomed.getBoundingClientRect();
+    ox = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
+    oy = Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100));
+    setOrigin(zoomed);
+  });
+
+  /* ───────── touch: pan when zoomed, swipe down to close ───────── */
+
+  const drag = { x: 0, y: 0, ox: 50, oy: 50, dy: 0, moved: false, vertical: false };
+
+  track.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    Object.assign(drag, { x: t.clientX, y: t.clientY, ox, oy, dy: 0, moved: false, vertical: false });
+  }, { passive: true });
+
+  track.addEventListener('touchmove', (e) => {
+    if (e.touches.length !== 1) return;
+    const t = e.touches[0];
+    const dx = t.clientX - drag.x;
+    const dy = t.clientY - drag.y;
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) drag.moved = true;
+
+    if (zoomed) {
+      const r = zoomed.getBoundingClientRect();
+      ox = Math.max(0, Math.min(100, drag.ox - (dx / r.width) * 100));
+      oy = Math.max(0, Math.min(100, drag.oy - (dy / r.height) * 100));
+      setOrigin(zoomed);
+      return;
+    }
+    if (!drag.vertical && dy > 10 && Math.abs(dy) > Math.abs(dx) * 1.3) drag.vertical = true;
+    if (drag.vertical) {
+      drag.dy = Math.max(0, dy);
+      dialog.style.setProperty('--pull', `${drag.dy}px`);
+      dialog.classList.add('pulling');
+    }
+  }, { passive: true });
+
+  track.addEventListener('touchend', () => {
+    if (!drag.vertical) return;
+    dialog.classList.remove('pulling');
+    if (drag.dy > 90) dialog.close();
+    dialog.style.removeProperty('--pull');
+    drag.vertical = false;
+  });
+
+  // tap on the dark space around the image closes the viewer
+  track.addEventListener('click', (e) => {
+    if (!(e.target as HTMLElement).closest('.lb-frame')) dialog.close();
+  });
+
+  /* ───────── open / close ───────── */
+
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>('[data-open]');
+    if (!btn) return;
+    const scope = btn.closest('[data-gallery-scope]');
+    const data = scope?.querySelector(':scope > script[data-gallery]');
+    if (!data?.textContent) return;
+    e.preventDefault();
+
+    slides = JSON.parse(data.textContent) as Slide[];
+    current = Number(btn.dataset.open) || 0;
+    opener = btn;
+    track.replaceChildren(...slides.map(slideEl));
+    dialog.showModal();
+    track.scrollTo({ left: current * track.clientWidth, behavior: 'auto' });
+    update();
+    track.focus({ preventScroll: true });
+  });
+
+  dialog.addEventListener('close', () => {
+    unzoom();
+    track.replaceChildren();
+    opener?.focus({ preventScroll: true });
+    opener = null;
+  });
+</script>
+
+<style>
+  .lightbox {
+    --pull: 0px;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: var(--text);
+    background: #050505;
+    transition: background-color 0.2s;
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+  .lightbox[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    animation: lb-in 0.22s ease-out;
+  }
+  .lightbox.pulling { background: rgb(5 5 5 / 0.75); transition: none; }
+  .lightbox::backdrop { background: transparent; }
+  :global(html:has(.lightbox[open])) { overflow: hidden; }
+
+  @keyframes lb-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* ---------- top bar ---------- */
+  .lb-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: max(0.75rem, env(safe-area-inset-top)) clamp(0.75rem, 3vw, 1.5rem) 0.5rem;
+    z-index: 2;
+  }
+  .lb-count {
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- slides ---------- */
+  .lb-track {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    touch-action: pan-x; /* vertical drags go to our swipe-down-to-close */
+    outline: none;
+    translate: 0 var(--pull);
+  }
+  .lb-track::-webkit-scrollbar { display: none; }
+  .pulling .lb-track { transition: none; }
+  .lightbox:not(.pulling) .lb-track { transition: translate 0.2s ease; }
+  .is-zoomed .lb-track { overflow-x: hidden; touch-action: none; }
+
+  .lb-track :global(.lb-slide) {
+    flex: 0 0 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    padding: 0.25rem clamp(0.5rem, 6vw, 5.5rem);
+    scroll-snap-align: center;
+    scroll-snap-stop: always;
+    container-type: size;
+  }
+  /* the frame is the largest box with the image's shape that fits the slide */
+  .lb-track :global(.lb-frame) {
+    width: min(100cqw, 100cqh * var(--r));
+    aspect-ratio: var(--r);
+    cursor: zoom-in;
+    transition: transform 0.25s ease;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .lb-track :global(.lb-frame.zoomed) { transform: scale(2.5); cursor: zoom-out; }
+  .lb-track :global(.lb-frame img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .lb-track :global(.lb-ph) {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: 1rem;
+    text-align: center;
+    color: #8a8a8a;
+    font-size: 0.95rem;
+    background:
+      repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 12px, transparent 12px 24px),
+      linear-gradient(160deg, #1d1d1d, #111);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+  .lb-track :global(.lb-ph-icon) {
+    width: 44px;
+    height: 36px;
+    border: 1.5px solid currentColor;
+    border-radius: 4px;
+  }
+
+  /* ---------- buttons ---------- */
+  .lb-btn {
+    width: 46px;
+    height: 46px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(15, 15, 15, 0.7);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.2s, color 0.2s, opacity 0.2s;
+  }
+  .lb-btn svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .lb-btn:hover:not(:disabled),
+  .lb-btn:focus-visible { border-color: var(--accent); color: var(--accent); }
+  .lb-btn:disabled { opacity: 0; pointer-events: none; }
+
+  .lb-nav {
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    z-index: 2;
+  }
+  .lb-prev { left: clamp(0.5rem, 2vw, 1.5rem); }
+  .lb-next { right: clamp(0.5rem, 2vw, 1.5rem); }
+  .single .lb-nav, .single .lb-count { display: none; }
+  .is-zoomed .lb-nav { opacity: 0; pointer-events: none; }
+
+  /* ---------- caption ---------- */
+  .lb-caption {
+    padding: 0.75rem clamp(1rem, 4vw, 2rem) max(1rem, env(safe-area-inset-bottom));
+    text-align: center;
+    transition: opacity 0.2s;
+  }
+  .lb-caption p { margin: 0; }
+  .lb-title { font-weight: 600; font-size: 1.05rem; }
+  .lb-meta { font-weight: 300; color: var(--text-muted); font-size: 0.9rem; min-height: 1.35em; }
+  .lb-hint { margin-top: 0.4rem !important; font-size: 0.75rem; letter-spacing: 0.06em; color: #777; }
+  .is-zoomed .lb-caption, .pulling .lb-caption, .pulling .lb-top { opacity: 0; }
+
+  /* phones: swipe replaces the arrow buttons */
+  @media (hover: none) and (pointer: coarse) {
+    .lb-nav { display: none; }
+  }
+  .hint-touch { display: none; }
+  @media (hover: none) and (pointer: coarse) {
+    .hint-touch { display: inline; }
+    .hint-mouse { display: none; }
+  }
+</style>

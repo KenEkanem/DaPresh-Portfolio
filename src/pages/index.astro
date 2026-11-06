@@ -9,6 +9,8 @@ import Brand from '../components/Brand.astro';
 import Portfolio from '../components/Portfolio.astro';
 import PortfolioPage from '../components/PortfolioPage.astro';
 import Contact from '../components/Contact.astro';
+import PortfolioTabs from '../components/PortfolioTabs.astro';
+import Lightbox from '../components/Lightbox.astro';
 
 // Portfolio pages come from src/content/portfolio/*.json, in `order`.
 const pages = (await getCollection('portfolioPages')).sort((a, b) => a.data.order - b.data.order);
@@ -18,6 +20,15 @@ const cue = (i: number) => {
     ? { href: `#${nextPage.data.anchor}`, label: `Scroll to ${nextPage.data.projects[0].heading}` }
     : { href: '#contact', label: 'Scroll to Contact' }; // after the last portfolio page
 };
+
+// Phone category tabs: consecutive pages with the same heading form one category.
+const tabs: { label: string; href: string; anchors: string[] }[] = [];
+for (const p of pages) {
+  const label = p.data.projects[0].heading;
+  const last = tabs.at(-1);
+  if (last?.label === label) last.anchors.push(p.data.anchor);
+  else tabs.push({ label, href: `#${p.data.anchor}`, anchors: [p.data.anchor] });
+}
 ---
 
 <BaseLayout>
@@ -28,7 +39,11 @@ const cue = (i: number) => {
     <Resume next={{ href: '#brand', label: 'Scroll to Brand' }} />
     <Brand next={{ href: '#portfolio', label: 'Scroll to Portfolio' }} />
     <Portfolio next={cue(0)} />
-    {pages.map((page, i) => <PortfolioPage page={page} next={cue(i + 1)} />)}
+    <div class="pf-flow">
+      <PortfolioTabs tabs={tabs} />
+      {pages.map((page, i) => <PortfolioPage page={page} next={cue(i + 1)} />)}
+    </div>
     <Contact />
   </main>
+  <Lightbox />
 </BaseLayout>

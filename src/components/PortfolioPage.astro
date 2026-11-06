@@ -10,7 +10,8 @@
  *  - feature-center 2 tiles | big tile | 2 tiles                                    (p11)
  *  - justified      rows of mixed-width tiles that share one height per row        (p15, 17)
  *
- * Phones (≤700px) get a swipeable Carousel per project instead of these layouts.
+ * Phones (≤700px) get a compact Mosaic per project instead of these layouts, and the
+ * page is only as tall as its content. Every tile opens the full-screen viewer (Lightbox).
  *
  * Trick used throughout: inside a `.row`, each tile gets `flex-grow: <its ratio>`, so
  * widths are proportional to aspect ratios and every tile in the row ends up the same height.
@@ -19,7 +20,9 @@ import type { CollectionEntry } from 'astro:content';
 import Tile from './Tile.astro';
 import PortfolioHeading from './PortfolioHeading.astro';
 import ScrollCue from './ScrollCue.astro';
-import Carousel from './Carousel.astro';
+import Mosaic from './Mosaic.astro';
+import GalleryData from './GalleryData.astro';
+import { toSlides } from '../lib/gallery';
 
 interface Props {
   page: CollectionEntry<'portfolioPages'>;
@@ -44,10 +47,21 @@ if (d.layout === 'justified') {
   if (i < items.length) rows.push(items.slice(i));
 }
 
-// Phones: each project becomes one carousel. Featured image goes first.
+// Viewer slides, in the same order as the tiles' `open` indices.
+// Desktop: duo has one gallery per project; the other layouts show only the first project.
+const desktopSlides = await Promise.all(
+  (d.layout === 'duo' ? d.projects : [first]).map((p) => toSlides(p.items, p)),
+);
+
+// Phones: one mosaic per project, featured image first.
 const featuredFirst = (list: typeof items) =>
   d.layout === 'showcase' && list[2] ? [list[2], ...list.slice(0, 2), ...list.slice(3)] : list;
-const mobileProjects = d.projects.map((p) => ({ ...p, slides: featuredFirst(p.items) }));
+const mobileProjects = await Promise.all(
+  d.projects.map(async (p) => {
+    const ordered = featuredFirst(p.items);
+    return { ...p, ordered, slides: await toSlides(ordered, p) };
+  }),
+);
 
 const style = `--cols: ${d.columns}`;
 ---
@@ -59,7 +73,8 @@ const style = `--cols: ${d.columns}`;
   aria-labelledby={titleId}
   style={style}
 >
-  <div class="container pf-desktop">
+  <div class="container pf-desktop" data-gallery-scope={d.layout === 'duo' ? undefined : ''}>
+    {d.layout !== 'duo' && <GalleryData slides={desktopSlides[0]} />}
     {/* ───── heading shown above the content (most layouts) ───── */}
     {
       ['grid', 'feature-center', 'justified'].includes(d.layout) && (
@@ -74,13 +89,13 @@ const style = `--cols: ${d.columns}`;
             <div class="sc-left">
               <PortfolioHeading id={titleId} heading={first.heading} title={first.title} client={first.client} date={first.date} />
               <div class="row sc-pair">
-                {items.slice(0, 2).map((it) => <Tile item={it} sizes="20vw" />)}
+                {items.slice(0, 2).map((it, i) => <Tile item={it} open={i} sizes="20vw" />)}
               </div>
             </div>
-            {items[2] && <Tile class="sc-main" item={items[2]} sizes="55vw" />}
+            {items[2] && <Tile class="sc-main" item={items[2]} open={2} sizes="55vw" />}
           </div>
           <div class="row sc-bottom">
-            {items.slice(3).map((it) => <Tile item={it} sizes="33vw" />)}
+            {items.slice(3).map((it, i) => <Tile item={it} open={3 + i} sizes="33vw" />)}
           </div>
         </div>
       )
@@ -92,7 +107,8 @@ const style = `--cols: ${d.columns}`;
           {d.projects.map((p, pi) => {
             const split = p.split ?? Math.ceil(p.items.length / 2);
             return (
-              <article class="duo-project">
+              <article class="duo-project" data-gallery-scope>
+                <GalleryData slides={desktopSlides[pi]} />
                 <PortfolioHeading
                   id={pi === 0 ? titleId : `${d.anchor}-title-${pi}`}
                   heading={p.heading}
@@ -102,10 +118,10 @@ const style = `--cols: ${d.columns}`;
                 />
                 <div class="duo-tiles">
                   <div class="stack">
-                    {p.items.slice(0, split).map((it) => <Tile item={it} sizes="(max-width: 900px) 50vw, 20vw" />)}
+                    {p.items.slice(0, split).map((it, i) => <Tile item={it} open={i} sizes="(max-width: 900px) 50vw, 20vw" />)}
                   </div>
                   <div class="stack">
-                    {p.items.slice(split).map((it) => <Tile item={it} sizes="(max-width: 900px) 50vw, 20vw" />)}
+                    {p.items.slice(split).map((it, i) => <Tile item={it} open={split + i} sizes="(max-width: 900px) 50vw, 20vw" />)}
                   </div>
                 </div>
               </article>
@@ -118,7 +134,7 @@ const style = `--cols: ${d.columns}`;
     {
       d.layout === 'grid' && (
         <div class="grid">
-          {items.map((it) => <Tile item={it} sizes={`(max-width: 1000px) 33vw, ${Math.round(100 / d.columns)}vw`} />)}
+          {items.map((it, i) => <Tile item={it} open={i} sizes={`(max-width: 1000px) 33vw, ${Math.round(100 / d.columns)}vw`} />)}
         </div>
       )
     }
@@ -128,10 +144,10 @@ const style = `--cols: ${d.columns}`;
         <div class="fl" style={`grid-template-columns: ${fr(d.proportions, '1fr 2fr')}`}>
           <div class="fl-left">
             <PortfolioHeading id={titleId} heading={first.heading} title={first.title} client={first.client} date={first.date} />
-            <Tile item={items[0]} sizes="35vw" />
+            <Tile item={items[0]} open={0} sizes="35vw" />
           </div>
           <div class="grid fl-smalls">
-            {items.slice(1).map((it) => <Tile item={it} sizes="20vw" />)}
+            {items.slice(1).map((it, i) => <Tile item={it} open={1 + i} sizes="20vw" />)}
           </div>
         </div>
       )
@@ -141,11 +157,11 @@ const style = `--cols: ${d.columns}`;
       d.layout === 'feature-center' && (
         <div class="fc" style={`grid-template-columns: ${fr(d.proportions, '1fr 2fr 1fr')}`}>
           <div class="stack fc-side">
-            {items.slice(1, 3).map((it) => <Tile item={it} sizes="20vw" />)}
+            {items.slice(1, 3).map((it, i) => <Tile item={it} open={1 + i} sizes="20vw" />)}
           </div>
-          <Tile class="fc-main" item={items[0]} sizes="45vw" />
+          <Tile class="fc-main" item={items[0]} open={0} sizes="45vw" />
           <div class="stack fc-side">
-            {items.slice(3, 5).map((it) => <Tile item={it} sizes="20vw" />)}
+            {items.slice(3, 5).map((it, i) => <Tile item={it} open={3 + i} sizes="20vw" />)}
           </div>
         </div>
       )
@@ -156,7 +172,7 @@ const style = `--cols: ${d.columns}`;
         <div class="justified">
           {rows.map((row) => (
             <div class="row">
-              {row.map((it) => <Tile item={it} sizes="30vw" />)}
+              {row.map((it) => <Tile item={it} open={items.indexOf(it)} sizes="30vw" />)}
             </div>
           ))}
         </div>
@@ -165,11 +181,12 @@ const style = `--cols: ${d.columns}`;
 
   </div>
 
-  {/* ───── phones: one carousel per project (hidden on larger screens; its lazy images don't load there) ───── */}
+  {/* ───── phones: one mosaic per project (hidden on larger screens; its lazy images don't load there) ───── */}
   <div class="container pf-mobile">
     {
       mobileProjects.map((p, pi) => (
-        <div class="m-project">
+        <div class="m-project" data-gallery-scope>
+          <GalleryData slides={p.slides} />
           <PortfolioHeading
             id={`${d.anchor}-m-title-${pi}`}
             heading={p.heading}
@@ -177,7 +194,7 @@ const style = `--cols: ${d.columns}`;
             client={p.client}
             date={p.date}
           />
-          <Carousel items={p.slides} label={`${p.heading}${p.client ? ` – ${p.client}` : ''}, gallery`} />
+          <Mosaic items={p.ordered} />
         </div>
       ))
     }
@@ -255,10 +272,19 @@ const style = `--cols: ${d.columns}`;
     .duo { grid-template-columns: 1fr; max-width: 640px; }
   }
 
-  /* ═════════════ Phone: carousels instead of the layouts ═════════════ */
+  /* ═════════════ Phone: mosaics instead of the layouts ═════════════
+     Pages are only as tall as their content (no full-screen pages, no scroll cue),
+     so the portfolio reads as one continuous feed. */
   @media (max-width: 700px) {
+    .pf-page {
+      min-height: 0;
+      padding-block: 1.75rem;
+      /* clear the fixed header + sticky category tabs when jumping to a page */
+      scroll-margin-top: calc(var(--header-h) + 2.5rem);
+    }
+    .pf-page > :global(.scroll-cue) { display: none; }
     .pf-desktop { display: none; }
-    /* minmax(0, 1fr): let each carousel shrink to the screen so its track scrolls */
-    .pf-mobile { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.5rem; }
+    .pf-mobile { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2.75rem; }
+    .m-project :global(.pf-heading) { margin-bottom: 0.9rem; }
   }
 </style>

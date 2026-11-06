@@ -1,0 +1,118 @@
+---
+/**
+ * Phones only: a row of category tabs that sticks under the header while you scroll
+ * through the portfolio pages. The tab for the category on screen is highlighted
+ * (and scrolled into view); tapping a tab jumps to that category.
+ *
+ * Must be the first child of the element that wraps all the portfolio pages, so it
+ * sticks for exactly that stretch of the page.
+ */
+interface Props {
+  /** one tab per category: label, the first page's anchor, and every page anchor in it */
+  tabs: { label: string; href: string; anchors: string[] }[];
+}
+const { tabs } = Astro.props;
+---
+
+<nav class="pf-tabs" aria-label="Portfolio categories">
+  <ul>
+    {
+      tabs.map((t) => (
+        <li>
+          <a href={t.href} data-anchors={t.anchors.join(' ')}>{t.label}</a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('.pf-tabs');
+  if (nav) {
+    const list = nav.querySelector('ul')!;
+    const links = [...nav.querySelectorAll<HTMLAnchorElement>('a[data-anchors]')];
+    const linkFor = new Map<string, HTMLAnchorElement>();
+    links.forEach((a) => a.dataset.anchors!.split(' ').forEach((id) => linkFor.set(id, a)));
+
+    const setActive = (a: HTMLAnchorElement | undefined) => {
+      links.forEach((l) => (l === a ? l.setAttribute('aria-current', 'true') : l.removeAttribute('aria-current')));
+      if (!a) return;
+      // scroll the tab row only (scrollIntoView would also move the page)
+      const left = a.offsetLeft - (list.clientWidth - a.offsetWidth) / 2;
+      list.scrollTo({ left, behavior: 'smooth' });
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const hit = entries.find((e) => e.isIntersecting);
+        if (hit) setActive(linkFor.get(hit.target.id));
+      },
+      { rootMargin: '-35% 0px -60% 0px' },
+    );
+    linkFor.forEach((_, id) => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    // show the bar's shadow only once it's stuck under the header
+    const sentinel = document.createElement('div');
+    sentinel.setAttribute('aria-hidden', 'true');
+    nav.before(sentinel);
+    new IntersectionObserver(
+      ([e]) => nav.classList.toggle('stuck', !e.isIntersecting),
+      { rootMargin: `-${parseFloat(getComputedStyle(nav).top) + 1}px 0px 0px 0px` },
+    ).observe(sentinel);
+  }
+</script>
+
+<style>
+  .pf-tabs { display: none; }
+
+  @media (max-width: 700px) {
+    .pf-tabs {
+      display: block;
+      position: sticky;
+      top: calc(var(--header-h) - 1rem);
+      z-index: 40;
+      background: rgba(7, 7, 7, 0.92);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .pf-tabs.stuck {
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+    }
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0.6rem var(--gutter);
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      overscroll-behavior-x: contain;
+    }
+    ul::-webkit-scrollbar { display: none; }
+    a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 0.35rem 0.95rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      white-space: nowrap;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+    }
+    a:hover { color: var(--text); }
+    a[aria-current] {
+      color: #0a0a0a;
+      background: var(--accent);
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+  }
+</style>
