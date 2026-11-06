@@ -4,7 +4,7 @@
  * - every slide keeps its image's shape (fixed height, width from the ratio; very wide
  *   images are capped at the screen width and get shorter instead)
  * - the next slide peeks in so it's obvious you can swipe
- * - prev/next buttons + "n / total" counter for keyboard and screen-reader users
+ * - side-mounted prev/next buttons + "n / total" counter for keyboard and screen-reader users
  */
 import type { ComponentProps } from 'astro/types';
 import Tile from './Tile.astro';
@@ -34,19 +34,17 @@ const ratio = (it: Item) => {
 
   {
     items.length > 1 && (
-      <div class="controls">
+      <div class="controls" aria-label="Carousel navigation">
         <button type="button" class="nav prev" aria-label="Previous image" disabled>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
         </button>
-        <span class="count" aria-live="polite">
-          <span class="cur">1</span> / {items.length}
-        </span>
         <button type="button" class="nav next" aria-label="Next image">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" /></svg>
         </button>
       </div>
     )
   }
+  {items.length > 1 && <div class="count" aria-live="polite"><span class="cur">1</span> / {items.length}</div>}
 </div>
 
 <script>
@@ -104,7 +102,11 @@ const ratio = (it: Item) => {
 </script>
 
 <style>
-  .carousel { --slide-h: clamp(240px, 50svh, 460px); }
+  .carousel {
+    --slide-h: clamp(190px, min(56svh, 72vw), 500px);
+    position: relative;
+    min-width: 0;
+  }
 
   .track {
     position: relative; /* slides' offsetLeft is measured from here */
@@ -113,7 +115,7 @@ const ratio = (it: Item) => {
     padding: 0.25rem var(--gutter) 0.75rem;
     display: flex;
     align-items: flex-start;
-    gap: 0.9rem;
+    gap: clamp(0.6rem, 2vw, 0.9rem);
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-snap-type: x mandatory;
@@ -126,20 +128,23 @@ const ratio = (it: Item) => {
   .slide {
     flex: 0 0 auto;
     /* height fixed by --slide-h, width follows the image ratio, capped to the screen */
-    width: min(85vw, calc(var(--slide-h) * var(--r)));
+    width: min(88vw, calc(var(--slide-h) * var(--r)));
     scroll-snap-align: start;
   }
   .slide:last-child { margin-right: var(--gutter); }
 
   .controls {
+    position: absolute;
+    z-index: 2;
+    inset: 0 calc(var(--gutter) * -1) 2.2rem;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    gap: 0.75rem;
-    margin-top: 0.25rem;
+    justify-content: space-between;
+    padding-inline: clamp(0.35rem, 1.5vw, 0.75rem);
+    pointer-events: none;
   }
   .count {
-    min-width: 3.5em;
+    margin-top: 0.1rem;
     text-align: center;
     font-size: 0.85rem;
     letter-spacing: 0.08em;
@@ -147,16 +152,18 @@ const ratio = (it: Item) => {
     font-variant-numeric: tabular-nums;
   }
   .nav {
-    width: 44px;
-    height: 44px;
+    width: clamp(38px, 11vw, 48px);
+    height: clamp(38px, 11vw, 48px);
     display: grid;
     place-items: center;
     border-radius: 50%;
-    border: 1.5px solid rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.42);
+    background: rgba(10, 10, 10, 0.72);
+    backdrop-filter: blur(8px);
     color: var(--text);
     cursor: pointer;
     transition: border-color 0.2s, color 0.2s, opacity 0.2s;
+    pointer-events: auto;
   }
   .nav svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round; }
   .nav:hover:not(:disabled),
