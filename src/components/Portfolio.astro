@@ -30,13 +30,12 @@ const { title, categories } = portfolio.data;
           <li>
             <a class="card" href={`#${c.target}`}>
               <h3>{c.title}</h3>
-              <Tile item={c.cover} sizes="(max-width: 700px) 72vw, 25vw" />
+              <Tile item={c.cover} sizes="(max-width: 1000px) 45vw, 25vw" />
             </a>
           </li>
         ))
       }
     </ul>
-    <p class="swipe-hint" aria-hidden="true">Swipe to see more →</p>
   </div>
 
   {next && <ScrollCue href={next.href} label={next.label} />}
@@ -101,33 +100,20 @@ const { title, categories } = portfolio.data;
   }
   .card :global(.tile) { margin-top: auto; }
 
-  .swipe-hint { display: none; }
-
   /* Tablets: 2 x 2 */
   @media (max-width: 1000px) {
     .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 
-  /* Phones: swipeable row with the next card peeking in */
+  /* Phones: compact 2 x 2 index (no sideways scrolling; the sticky tabs take over below) */
   @media (max-width: 700px) {
-    .cards {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scroll-padding-inline: var(--gutter);
-      margin-inline: calc(var(--gutter) * -1);
-      padding: 0.5rem var(--gutter) 1.25rem;
-      scrollbar-width: none;
+    .cards { gap: 0.75rem; }
+    .card {
+      gap: 0.75rem;
+      padding: 0.85rem 0.7rem 0.75rem;
+      border-radius: 16px;
+      --tile-radius: 10px;
     }
-    .cards::-webkit-scrollbar { display: none; }
-    .cards li { flex: 0 0 72%; scroll-snap-align: start; }
-    .swipe-hint {
-      display: block;
-      margin: 0;
-      text-align: right;
-      font-size: 0.8rem;
-      letter-spacing: 0.08em;
-      color: var(--text-muted);
-    }
+    .card h3 { font-size: 0.95rem; min-height: 2.5em; }
   }
 </style>
